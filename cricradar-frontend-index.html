@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CricRadar — Pakistan cricket, instantly</title>
+<meta name="theme-color" content="#0B5D3B">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏏</text></svg>">
+<style>
+:root {
+  --green-50: #E9F5EE;
+  --green-100: #BEE3CE;
+  --green-400: #1E8449;
+  --green-600: #0B5D3B;
+  --green-800: #073D27;
+  --green-900: #052A1B;
+  --cream: #F7F5EF;
+  --ink: #14201A;
+  --ink-soft: #4B5A52;
+  --line: rgba(20,32,26,0.12);
+  --white: #FFFFFF;
+  --amber: #C77D28;
+  --red: #B3423A;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --cream: #10160F;
+    --ink: #EAF1EC;
+    --ink-soft: #9FB0A6;
+    --line: rgba(234,241,236,0.14);
+    --white: #17201A;
+    --green-50: #16261D;
+    --green-100: #1D3428;
+  }
+}
+:root[data-theme="dark"] {
+  --cream: #10160F;
+  --ink: #EAF1EC;
+  --ink-soft: #9FB0A6;
+  --line: rgba(234,241,236,0.14);
+  --white: #17201A;
+  --green-50: #16261D;
+  --green-100: #1D3428;
+}
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--green-800);
+  color: var(--green-50);
+  z-index: 20;
+}
+.topbar-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--green-400);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex: none;
+}
+.brand-name { font-family: var(--font-display); font-size: 18px; letter-spacing: 0.2px; }
+.brand-sub { font-size: 11px; color: var(--green-100); opacity: 0.75; margin-top: 1px; }
+
+.bell-btn {
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.06);
+  color: var(--green-50);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease;
+}
+.bell-btn:active { transform: scale(0.98); }
+.bell-btn.on { background: var(--green-400); border-color: var(--green-400); }
+
+/* ---------- shell ---------- */
+.shell { max-width: 640px; margin: 0 auto; padding: 24px 20px 80px; }
+
+.hero {
+  padding: 6px 0 22px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 22px;
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.25;
+  margin: 0 0 10px;
+  max-width: 20ch;
+}
+.hero p {
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 42ch;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-soft); flex: none; }
+.dot.live { background: var(--red); animation: pulse 1.6s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* ---------- feed ---------- */
+.feed-label {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 0 0 12px;
+}
+.feed { display: flex; flex-direction: column; gap: 10px; }
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.card-icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex: none; margin-top: 1px;
+}
+.card-icon.win { background: var(--green-100); }
+.card-icon.injury { background: #F3DCC8; }
+.card-icon.fixture { background: #DCE7F0; }
+.card-icon.digest { background: var(--green-50); }
+
+.card-body { flex: 1; min-width: 0; }
+.card-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.card-tag {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--green-600);
+}
+.card-time { font-size: 11px; color: var(--ink-soft); white-space: nowrap; }
+.card-headline { font-size: 15px; font-weight: 600; margin: 3px 0 2px; line-height: 1.4; }
+.card-sub { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; margin: 0; }
+.card-expand {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--green-600);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.card-detail {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  display: none;
+}
+.card-detail.open { display: block; }
+.card-detail b { color: var(--ink); font-weight: 600; }
+
+/* ---------- onboarding ---------- */
+.onboard {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.onboard h2 { font-size: 15px; margin: 0 0 4px; font-weight: 600; }
+.onboard p { font-size: 13px; color: var(--ink-soft); margin: 0 0 14px; line-height: 1.5; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.chip {
+  border: 1px solid var(--line);
+  background: var(--cream);
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+.chip.active { background: var(--green-600); border-color: var(--green-600); color: #fff; }
+.intensity-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.intensity {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: var(--cream);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+}
+.intensity.active { border-color: var(--green-600); background: var(--green-50); color: var(--green-600); font-weight: 600; }
+.enable-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  border: none;
+  background: var(--green-600);
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.enable-btn:active { transform: scale(0.99); }
+.enable-note { font-size: 11.5px; color: var(--ink-soft); margin-top: 10px; text-align: center; line-height: 1.5; }
+
+.footer-note {
+  margin-top: 28px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  text-align: center;
+  line-height: 1.6;
+}
+.footer-note a { color: var(--green-600); }
+
+/* toast for demo push */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--green-800);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  max-width: 90%;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 50;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">🏏</div>
+      <div>
+        <div class="brand-name">CricRadar</div>
+        <div class="brand-sub">Pakistan cricket, only what matters</div>
+      </div>
+    </div>
+    <button class="bell-btn" id="bellBtn"><span>🔔</span><span id="bellLabel">Enable alerts</span></button>
+  </div>
+</div>
+
+<div class="shell">
+
+  <div class="hero">
+    <h1>The three things that happened, not fifty news stories.</h1>
+    <p>CricRadar watches Pakistan cricket for you and only interrupts when something you'd actually want to know just happened — a wicket, a win, an injury, a match tomorrow.</p>
+    <div class="status-row">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">Checking for live matches…</span>
+    </div>
+  </div>
+
+  <div class="onboard" id="onboard">
+    <h2>What should wake your phone up?</h2>
+    <p>Pick a squad or two. This is a test build, so it's Pakistan cricket only for now.</p>
+    <div class="chip-row" id="interestChips">
+      <div class="chip active" data-v="pak">Pakistan national team</div>
+      <div class="chip" data-v="babar">Babar Azam</div>
+      <div class="chip" data-v="psl">PSL</div>
+      <div class="chip" data-v="rivals">Big India / Australia / England clashes</div>
+    </div>
+    <p style="margin-bottom:8px;">How much do you want to hear from us?</p>
+    <div class="intensity-row" id="intensityRow">
+      <div class="intensity" data-v="minimal">Minimal<br>Only huge stuff</div>
+      <div class="intensity active" data-v="important">Important<br>Major + notable</div>
+      <div class="intensity" data-v="realtime">Real-time<br>As it's confirmed</div>
+    </div>
+    <button class="enable-btn" id="enableBtn">Turn on alerts</button>
+    <div class="enable-note">Your browser will ask permission. No account, no email, nothing to download.</div>
+  </div>
+
+  <p class="feed-label" id="feedLabel">Live feed</p>
+  <div class="feed" id="feed"></div>
+
+  <div class="footer-note">
+    This is a one-person test build — not a company, not a finished product.<br>
+    Built to see if this kind of alert is actually useful before building it out further.
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  var feedEl = document.getElementById('feed');
+  var statusDot = document.getElementById('statusDot');
+  var statusText = document.getElementById('statusText');
+  var bellBtn = document.getElementById('bellBtn');
+  var bellLabel = document.getElementById('bellLabel');
+  var enableBtn = document.getElementById('enableBtn');
+  var toast = document.getElementById('toast');
+  var onboard = document.getElementById('onboard');
+
+  var interests = { pak: true, babar: false, psl: false, rivals: false };
+  var intensity = 'important';
+  var alertsOn = false;
+
+  document.querySelectorAll('#interestChips .chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      chip.classList.toggle('active');
+      interests[chip.dataset.v] = chip.classList.contains('active');
+    });
+  });
+  document.querySelectorAll('#intensityRow .intensity').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('#intensityRow .intensity').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      intensity = btn.dataset.v;
+    });
+  });
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function () { toast.classList.remove('show'); }, 3200);
+  }
+
+  function requestPush() {
+    if (!('Notification' in window)) {
+      showToast('Push not supported in this browser — alerts will still show in-app.');
+      setAlertsOn(true);
+      return;
+    }
+    Notification.requestPermission().then(function (perm) {
+      if (perm === 'granted') {
+        setAlertsOn(true);
+        showToast('Alerts on. You\'ll get the next Pakistan update here.');
+        new Notification('CricRadar', { body: 'Alerts enabled. Sit back — we\'ll ping you when it matters.' });
+      } else {
+        showToast('Notifications blocked — you can still watch the live feed below.');
+      }
+    });
+  }
+
+  function setAlertsOn(v) {
+    alertsOn = v;
+    bellBtn.classList.toggle('on', v);
+    bellLabel.textContent = v ? 'Alerts on' : 'Enable alerts';
+  }
+
+  bellBtn.addEventListener('click', function () {
+    if (!alertsOn) requestPush();
+  });
+  enableBtn.addEventListener('click', function () {
+    requestPush();
+    onboard.style.opacity = '0.55';
+    onboard.style.pointerEvents = 'none';
+  });
+
+  // ---- live backend connection ----
+  // This is the address of the real 24/7 program checking cricket scores.
+  var BACKEND_URL = 'https://cricradar-backend-production.up.railway.app';
+
+  var liveEvents = [];
+
+  function iconFor(tag) {
+    if (/result|win/i.test(tag)) return { icon: '🏏', cls: 'win' };
+    if (/injury/i.test(tag)) return { icon: '🩹', cls: 'injury' };
+    if (/upcoming|fixture/i.test(tag)) return { icon: '📅', cls: 'fixture' };
+    if (/digest/i.test(tag)) return { icon: '📰', cls: 'digest' };
+    return { icon: '🏏', cls: 'win' };
+  }
+
+  function timeAgo(iso) {
+    var diffMs = Date.now() - new Date(iso).getTime();
+    var mins = Math.round(diffMs / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return mins + 'm ago';
+    var hrs = Math.round(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    return Math.round(hrs / 24) + 'd ago';
+  }
+
+  function fetchLiveFeed() {
+    fetch(BACKEND_URL + '/api/feed')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var alerts = data.alerts || [];
+        if (alerts.length > 0) {
+          statusDot.classList.add('live');
+          statusText.textContent = 'Connected — ' + alerts.length + ' update' + (alerts.length === 1 ? '' : 's') + ' tracked';
+        } else {
+          statusText.textContent = 'Connected — watching for Pakistan matches, nothing yet';
+        }
+        liveEvents = alerts.map(function (a) {
+          var vis = iconFor(a.tag);
+          return {
+            tag: a.tag, icon: vis.icon, cls: vis.cls, time: timeAgo(a.time),
+            headline: a.headline, sub: a.sub,
+            detail: '<b>Match tracked live.</b><br>This alert came straight from the live CricRadar backend.'
+          };
+        });
+        render();
+      })
+      .catch(function (err) {
+        statusText.textContent = 'Could not reach the live backend — check it\'s still running';
+        console.error('CricRadar fetch failed:', err);
+      });
+  }
+
+  function render() {
+    feedEl.innerHTML = '';
+    if (liveEvents.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'card';
+      empty.innerHTML = '<div class="card-icon digest">📡</div><div class="card-body"><div class="card-headline">No Pakistan matches right now</div><p class="card-sub">The backend is checking every 30 seconds — this feed updates the moment something happens.</p></div>';
+      feedEl.appendChild(empty);
+      return;
+    }
+    liveEvents.forEach(function (ev, i) {
+      var card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML =
+        '<div class="card-icon ' + ev.cls + '">' + ev.icon + '</div>' +
+        '<div class="card-body">' +
+          '<div class="card-top"><span class="card-tag">' + ev.tag + '</span><span class="card-time">' + ev.time + '</span></div>' +
+          '<div class="card-headline">' + ev.headline + '</div>' +
+          '<p class="card-sub">' + ev.sub + '</p>' +
+          '<button class="card-expand" data-i="' + i + '">Show more</button>' +
+          '<div class="card-detail" id="detail-' + i + '">' + ev.detail + '</div>' +
+        '</div>';
+      feedEl.appendChild(card);
+    });
+    document.querySelectorAll('.card-expand').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var d = document.getElementById('detail-' + btn.dataset.i);
+        var open = d.classList.toggle('open');
+        btn.textContent = open ? 'Show less' : 'Show more';
+      });
+    });
+  }
+
+  statusText.textContent = 'Connecting to CricRadar backend…';
+  fetchLiveFeed();
+  setInterval(fetchLiveFeed, 30000); // refresh from the real backend every 30 seconds
+
+})();
+</script>
+</body>
+</html>
