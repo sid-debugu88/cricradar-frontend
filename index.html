@@ -3,26 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CricRadar — Pakistan cricket, instantly</title>
-<meta name="theme-color" content="#0B5D3B">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏏</text></svg>">
+<title>Sift — World cricket, without the noise</title>
+<meta name="theme-color" content="#0A0C10">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22none%22 stroke=%22%233D6BFF%22 stroke-width=%228%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%2333D2FF%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --green-50: #E9F5EE;
-  --green-100: #BEE3CE;
-  --green-400: #1E8449;
-  --green-600: #0B5D3B;
-  --green-800: #073D27;
-  --green-900: #052A1B;
-  --cream: #F7F5EF;
-  --ink: #14201A;
-  --ink-soft: #4B5A52;
-  --line: rgba(20,32,26,0.12);
-  --white: #FFFFFF;
-  --amber: #C77D28;
-  --red: #B3423A;
-  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-display: Georgia, "Times New Roman", serif;
+  --bg: #0A0C10;
+  --surface: #12151B;
+  --surface-2: #171B22;
+  --border: #232830;
+  --text: #F2F4F7;
+  --text-soft: #8B94A3;
+  --text-dim: #5B6270;
+  --blue: #3D6BFF;
+  --blue-glow: #33D2FF;
+  --red: #FF3B4E;
+  --green: #22C55E;
+  --amber: #FFB547;
+  --font-head: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -30,257 +32,249 @@
 * { box-sizing: border-box; }
 html { scroll-padding-top: env(safe-area-inset-top, 0px); }
 body {
-  margin: 0;
-  background: var(--cream);
-  color: var(--ink);
-  font-family: var(--font-body);
-  -webkit-font-smoothing: antialiased;
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: var(--font-body); -webkit-font-smoothing: antialiased;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --cream: #10160F;
-    --ink: #EAF1EC;
-    --ink-soft: #9FB0A6;
-    --line: rgba(234,241,236,0.14);
-    --white: #17201A;
-    --green-50: #16261D;
-    --green-100: #1D3428;
-  }
+:root[data-theme="light"] {
+  --bg: #F7F7F5; --surface: #FFFFFF; --surface-2: #F0F0EE; --border: rgba(10,12,16,0.1);
+  --text: #0A0C10; --text-soft: #565E6B; --text-dim: #8B94A3;
 }
-:root[data-theme="dark"] {
-  --cream: #10160F;
-  --ink: #EAF1EC;
-  --ink-soft: #9FB0A6;
-  --line: rgba(234,241,236,0.14);
-  --white: #17201A;
-  --green-50: #16261D;
-  --green-100: #1D3428;
-}
+a { color: inherit; }
 
-/* ---------- top bar ---------- */
+/* ---------- topbar ---------- */
 .topbar {
-  position: sticky;
-  top: 0;
+  position: sticky; top: 0; z-index: 40;
   padding-top: env(safe-area-inset-top, 0px);
-  background: var(--green-800);
-  color: var(--green-50);
-  z-index: 20;
+  background: rgba(10,12,16,0.86); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  transition: padding 0.25s ease, box-shadow 0.25s ease;
 }
+.topbar.compact { box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+.topbar.compact .topbar-inner { padding-top: 10px; padding-bottom: 10px; }
+.topbar.compact .brand-name { font-size: 17px; }
+:root[data-theme="light"] .topbar { background: rgba(247,247,245,0.86); }
 .topbar-inner {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  max-width: 920px; margin: 0 auto; padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
 .brand { display: flex; align-items: center; gap: 10px; }
 .brand-mark {
-  width: 30px; height: 30px; border-radius: 8px;
-  background: var(--green-400);
+  width: 26px; height: 26px; border-radius: 50%; flex: none;
+  background: conic-gradient(from 180deg, var(--blue), var(--blue-glow), var(--blue));
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex: none;
 }
-.brand-name { font-family: var(--font-display); font-size: 18px; letter-spacing: 0.2px; }
-.brand-sub { font-size: 11px; color: var(--green-100); opacity: 0.75; margin-top: 1px; }
+.brand-mark::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--bg); }
+.brand-name { font-family: var(--font-head); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; transition: font-size 0.25s ease; }
+.live-pill {
+  display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-soft);
+  border: 1px solid var(--border); border-radius: 20px; padding: 5px 11px;
+}
+.live-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.live-pill .dot.active { animation: pulse 1.8s infinite; }
 
 .bell-btn {
-  border: 1px solid rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.06);
-  color: var(--green-50);
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-family: var(--font-body);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.15s ease;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  border-radius: 8px; padding: 8px 15px; font-size: 13px; font-weight: 500;
+  font-family: var(--font-body); cursor: pointer;
 }
-.bell-btn:active { transform: scale(0.98); }
-.bell-btn.on { background: var(--green-400); border-color: var(--green-400); }
+.bell-btn.on { background: var(--blue); border-color: var(--blue); color: #fff; }
 
 /* ---------- shell ---------- */
-.shell { max-width: 640px; margin: 0 auto; padding: 24px 20px 80px; }
+.shell { max-width: 920px; margin: 0 auto; padding: 0 24px 100px; }
 
-.hero {
-  padding: 6px 0 22px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 22px;
+/* ---------- hero ---------- */
+.hero { padding: 52px 0 34px; }
+.hero-eyebrow {
+  font-size: 12.5px; color: var(--blue-glow); margin: 0 0 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
 }
+.hero-eyebrow::before { content: ''; width: 16px; height: 1px; background: var(--blue-glow); }
 .hero h1 {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 30px;
-  line-height: 1.25;
-  margin: 0 0 10px;
-  max-width: 20ch;
+  font-family: var(--font-head); font-weight: 600; font-size: clamp(34px, 6vw, 54px);
+  line-height: 1.08; margin: 0 0 18px; letter-spacing: -0.02em; max-width: 14ch;
 }
-.hero p {
-  color: var(--ink-soft);
-  font-size: 15px;
-  line-height: 1.6;
-  margin: 0;
-  max-width: 42ch;
+.hero p { color: var(--text-soft); font-size: 16.5px; line-height: 1.65; margin: 0; max-width: 46ch; }
+
+/* ---------- statement section (static, no scroll animation) ---------- */
+.section-statement {
+  max-width: 56ch; padding: 8px 0 44px; border-bottom: 1px solid var(--border);
+}
+.section-statement p {
+  font-size: 17px; line-height: 1.75; color: var(--text-soft); margin: 0 0 16px;
+}
+.section-statement .statement-lede {
+  font-family: var(--font-head); font-size: 24px; font-weight: 500; color: var(--text);
+  line-height: 1.4; margin-bottom: 0;
 }
 
-.status-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-  font-size: 13px;
-  color: var(--ink-soft);
-}
-.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-soft); flex: none; }
-.dot.live { background: var(--red); animation: pulse 1.6s infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+/* ---------- entrance + reveal motion ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-up {
+    opacity: 0; transform: translateY(14px);
+    animation: revealUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes revealUp { to { opacity: 1; transform: translateY(0); } }
 
-/* ---------- feed ---------- */
-.feed-label {
-  font-size: 12px;
-  color: var(--ink-soft);
-  margin: 0 0 12px;
-}
-.feed { display: flex; flex-direction: column; gap: 10px; }
+  .hero h1 {
+    opacity: 0; letter-spacing: 0.01em; transform: translateY(10px);
+    animation: heroSettle 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  }
+  @keyframes heroSettle {
+    to { opacity: 1; letter-spacing: -0.02em; transform: translateY(0); }
+  }
 
-.card {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 14px 16px;
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-.card-icon {
-  width: 34px; height: 34px; border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 17px; flex: none; margin-top: 1px;
-}
-.card-icon.win { background: var(--green-100); }
-.card-icon.injury { background: #F3DCC8; }
-.card-icon.fixture { background: #DCE7F0; }
-.card-icon.digest { background: var(--green-50); }
+  .on-scroll { opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .on-scroll.in-view { opacity: 1; transform: translateY(0); }
 
-.card-body { flex: 1; min-width: 0; }
-.card-top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
+  .tick-enter {
+    animation: tickEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top;
+  }
+  @keyframes tickEnter {
+    from { opacity: 0; transform: translateY(-8px) scaleY(0.96); }
+    to { opacity: 1; transform: translateY(0) scaleY(1); }
+  }
+  .tick-badge.breaking.tick-enter-badge { animation: badgePop 0.6s ease; }
+  @keyframes badgePop { 0% { transform: scale(0); } 60% { transform: scale(1.4); } 100% { transform: scale(1); } }
 }
-.card-tag {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: var(--green-600);
+
+/* ---------- bento grid ---------- */
+.bento { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; margin: 40px 0; }
+@media (max-width: 640px) { .bento { grid-template-columns: 1fr; } }
+
+.bento-main {
+  grid-row: span 2; background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 28px; display: flex; flex-direction: column; justify-content: flex-end; min-height: 300px;
+  position: relative; overflow: hidden; transition: border-color 0.3s ease, transform 0.3s ease;
 }
-.card-time { font-size: 11px; color: var(--ink-soft); white-space: nowrap; }
-.card-headline { font-size: 15px; font-weight: 600; margin: 3px 0 2px; line-height: 1.4; }
-.card-sub { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; margin: 0; }
-.card-expand {
-  margin-top: 8px;
-  font-size: 12.5px;
-  color: var(--green-600);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  font-family: var(--font-body);
+.bento-main:hover { border-color: rgba(61,107,255,0.35); transform: translateY(-2px); }
+.bento-main:hover h2 { color: var(--blue-glow); }
+.bento-main h2 { transition: color 0.3s ease; }
+.bento-main::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 85% -10%, rgba(61,107,255,0.16), transparent 55%);
+  pointer-events: none;
 }
-.card-detail {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
-  font-size: 13px;
-  color: var(--ink-soft);
-  line-height: 1.6;
-  display: none;
+.tag-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; position: relative; }
+.tag-live {
+  background: var(--red); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+  border-radius: 4px; padding: 3px 8px; display: flex; align-items: center; gap: 5px;
 }
-.card-detail.open { display: block; }
-.card-detail b { color: var(--ink); font-weight: 600; }
+.tag-live .dot { width: 5px; height: 5px; border-radius: 50%; background: #fff; animation: pulse 1.6s infinite; }
+.tag-meta { font-size: 12.5px; color: var(--text-dim); }
+.bento-main h2 {
+  font-family: var(--font-head); font-weight: 500; font-size: clamp(24px, 3.4vw, 32px);
+  line-height: 1.2; margin: 0 0 10px; position: relative;
+}
+.bento-main .desc { font-size: 14.5px; color: var(--text-soft); line-height: 1.6; max-width: 42ch; position: relative; }
+
+.bento-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px;
+  display: flex; flex-direction: column; justify-content: space-between; min-height: 143px;
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+.bento-card:hover { border-color: rgba(61,107,255,0.3); transform: translateY(-2px); }
+.bento-card h3 {
+  font-family: var(--font-head); font-weight: 500; font-size: 17px; line-height: 1.35; margin: 10px 0 0;
+}
+.bento-card .desc-sm { font-size: 12.5px; color: var(--text-soft); margin-top: 6px; line-height: 1.5; }
+
+/* ---------- live ticker ---------- */
+.ticker-section { margin: 44px 0; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+.section-title { font-family: var(--font-head); font-size: 21px; font-weight: 500; margin: 0; }
+.section-sub { font-size: 12px; color: var(--text-dim); font-family: var(--font-body); }
+
+.ticker { display: flex; flex-direction: column; }
+.tick {
+  display: flex; align-items: flex-start; gap: 16px; padding: 15px 0;
+  border-bottom: 1px solid var(--border); transition: padding-left 0.25s ease, background 0.25s ease;
+  cursor: pointer; border-radius: 6px;
+}
+.tick:last-child { border-bottom: none; }
+.tick:hover { padding-left: 4px; }
+.tick:hover .tick-time { color: var(--blue-glow); }
+.tick:hover .tick-headline { color: var(--blue-glow); }
+.tick.expanded { padding-left: 12px; padding-right: 12px; background: var(--surface); }
+.tick.expanded .tick-time { color: var(--blue-glow); }
+.tick.expanded .tick-headline { color: var(--blue-glow); }
+.tick-time { font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; width: 58px; flex: none; padding-top: 2px; transition: color 0.25s ease; }
+.tick-badge {
+  width: 6px; height: 6px; border-radius: 50%; margin-top: 6px; flex: none; background: var(--text-dim);
+}
+.tick-badge.breaking { background: var(--red); }
+.tick-badge.result { background: var(--green); }
+.tick-badge.watch { background: var(--amber); }
+.tick-body { flex: 1; min-width: 0; }
+.tick-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.02em; color: var(--text-dim); text-transform: uppercase; }
+.tick-tag.breaking { color: var(--red); }
+.tick-headline { font-size: 15px; font-weight: 600; margin: 4px 0 3px; line-height: 1.4; transition: color 0.25s ease; }
+.tick-sub { font-size: 13.5px; color: var(--text-soft); line-height: 1.55; margin: 0; }
+
+.tick-detail {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, margin-top 0.35s ease;
+}
+.tick.expanded .tick-detail {
+  max-height: 120px; opacity: 1; margin-top: 12px;
+  padding-top: 12px; border-top: 1px solid var(--border);
+}
+.tick-detail-row { display: flex; gap: 18px; font-size: 12.5px; color: var(--text-dim); flex-wrap: wrap; }
+.tick-detail-row strong { color: var(--text-soft); font-weight: 500; }
+
+.empty-state {
+  padding: 30px 0; color: var(--text-soft); font-size: 14px; line-height: 1.7; text-align: center;
+}
+
+/* ---------- digest strip ---------- */
+.digest-strip { display: flex; flex-direction: column; gap: 0; }
+.digest-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.digest-item:last-child { border-bottom: none; }
+.digest-tag {
+  font-size: 10.5px; font-weight: 700; color: var(--blue-glow); background: rgba(61,107,255,0.12);
+  border-radius: 4px; padding: 3px 8px; height: fit-content; white-space: nowrap; margin-top: 2px; letter-spacing: 0.02em;
+}
+.digest-text { font-size: 14px; line-height: 1.55; color: var(--text); }
 
 /* ---------- onboarding ---------- */
 .onboard {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 28px;
+  margin: 44px 0;
 }
-.onboard h2 { font-size: 15px; margin: 0 0 4px; font-weight: 600; }
-.onboard p { font-size: 13px; color: var(--ink-soft); margin: 0 0 14px; line-height: 1.5; }
-.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.onboard h2 { font-family: var(--font-head); font-size: 19px; margin: 0 0 6px; font-weight: 500; }
+.onboard p { font-size: 13.5px; color: var(--text-soft); margin: 0 0 20px; line-height: 1.55; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
 .chip {
-  border: 1px solid var(--line);
-  background: var(--cream);
-  border-radius: 999px;
-  padding: 7px 13px;
-  font-size: 13px;
-  cursor: pointer;
-  color: var(--ink);
-  font-family: var(--font-body);
+  border: 1px solid var(--border); background: var(--surface-2); border-radius: 20px; padding: 8px 15px;
+  font-size: 13px; cursor: pointer; color: var(--text); font-family: var(--font-body);
 }
-.chip.active { background: var(--green-600); border-color: var(--green-600); color: #fff; }
-.intensity-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.chip.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.intensity-row { display: flex; gap: 8px; margin-bottom: 22px; }
 .intensity {
-  flex: 1;
-  border: 1px solid var(--line);
-  background: var(--cream);
-  border-radius: 10px;
-  padding: 10px 8px;
-  text-align: center;
-  cursor: pointer;
-  font-size: 12px;
-  color: var(--ink-soft);
-  font-family: var(--font-body);
+  flex: 1; border: 1px solid var(--border); background: var(--surface-2); border-radius: 8px;
+  padding: 12px 8px; text-align: center; cursor: pointer; font-size: 12px; color: var(--text-soft);
+  font-family: var(--font-body); line-height: 1.5;
 }
-.intensity.active { border-color: var(--green-600); background: var(--green-50); color: var(--green-600); font-weight: 600; }
+.intensity.active { border-color: var(--blue); background: rgba(61,107,255,0.12); color: var(--blue-glow); font-weight: 600; }
 .enable-btn {
-  width: 100%;
-  padding: 13px;
-  border-radius: 10px;
-  border: none;
-  background: var(--green-600);
-  color: #fff;
-  font-size: 14.5px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: var(--font-body);
+  width: 100%; padding: 14px; border-radius: 8px; border: none;
+  background: linear-gradient(135deg, var(--blue), var(--blue-glow)); color: #fff;
+  font-size: 14.5px; font-weight: 700; cursor: pointer; font-family: var(--font-body);
 }
-.enable-btn:active { transform: scale(0.99); }
-.enable-note { font-size: 11.5px; color: var(--ink-soft); margin-top: 10px; text-align: center; line-height: 1.5; }
+.enable-note { font-size: 11.5px; color: var(--text-dim); margin-top: 12px; text-align: center; line-height: 1.5; }
 
 .footer-note {
-  margin-top: 28px;
-  font-size: 12px;
-  color: var(--ink-soft);
-  text-align: center;
-  line-height: 1.6;
+  padding: 30px 0 0; font-size: 12.5px; color: var(--text-dim); line-height: 1.7;
+  border-top: 1px solid var(--border); margin-top: 10px;
 }
-.footer-note a { color: var(--green-600); }
 
-/* toast for demo push */
 .toast {
-  position: fixed;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--green-800);
-  color: #fff;
-  padding: 12px 18px;
-  border-radius: 12px;
-  font-size: 13.5px;
-  max-width: 90%;
-  opacity: 0;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  z-index: 50;
-  pointer-events: none;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  padding: 12px 18px; border-radius: 10px; font-size: 13.5px; max-width: 90%;
+  opacity: 0; transition: opacity .25s ease, transform .25s ease; z-index: 50; pointer-events: none;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
@@ -290,37 +284,86 @@ body {
 <div class="topbar">
   <div class="topbar-inner">
     <div class="brand">
-      <div class="brand-mark">🏏</div>
-      <div>
-        <div class="brand-name">CricRadar</div>
-        <div class="brand-sub">Pakistan cricket, only what matters</div>
-      </div>
+      <div class="brand-mark"></div>
+      <span class="brand-name">Sift</span>
     </div>
-    <button class="bell-btn" id="bellBtn"><span>🔔</span><span id="bellLabel">Enable alerts</span></button>
+    <div class="live-pill"><span class="dot" id="pillDot"></span><span id="pillText">Connecting</span></div>
+    <button class="bell-btn" id="bellBtn">Enable alerts</button>
   </div>
 </div>
 
 <div class="shell">
 
   <div class="hero">
-    <h1>The three things that happened, not fifty news stories.</h1>
-    <p>CricRadar watches Pakistan cricket for you and only interrupts when something you'd actually want to know just happened — a wicket, a win, an injury, a match tomorrow.</p>
-    <div class="status-row">
-      <span class="dot" id="statusDot"></span>
-      <span id="statusText">Checking for live matches…</span>
+    <p class="hero-eyebrow reveal-up">World cricket, live</p>
+    <h1>Something just happened somewhere in the cricket world. You probably don't know yet.</h1>
+    <p class="reveal-up" style="animation-delay:0.5s;">That's fine — most of it doesn't matter to you. Sift watches every international match, every series, every squad announcement, and only taps you on the shoulder for the handful of things you'd actually stop scrolling for.</p>
+  </div>
+
+  <div class="section-statement">
+    <p>A wicket falls in Melbourne. A player pulls up injured in Multan. A result comes in from a match you didn't know was even on. Somewhere, all day, cricket is happening — and almost none of it reaches you until hours later, buried in fifty other headlines.</p>
+    <p class="statement-lede">So we stopped trying to show you everything.</p>
+  </div>
+
+  <div class="bento">
+    <div class="bento-main" id="bentoMain">
+      <div class="tag-row">
+        <span class="tag-live" id="mainTagLive" style="display:none;"><span class="dot"></span>LIVE</span>
+        <span class="tag-meta" id="mainMeta">Next up</span>
+      </div>
+      <h2 id="mainHeadline">No live match right now</h2>
+      <p class="desc" id="mainDesc">The next confirmed international fixture shows up here the second it's locked in — Sift checks in on world cricket every 30 seconds, day and night.</p>
+    </div>
+    <div class="bento-card">
+      <div class="tag-row" style="margin-bottom:0;"><span class="tag-meta">Last result</span></div>
+      <h3>Australia beat India by 4 wickets</h3>
+      <div class="desc-sm">Labuschagne 76* — 2nd ODI, Melbourne</div>
+    </div>
+    <div class="bento-card">
+      <div class="tag-row" style="margin-bottom:0;"><span class="tag-meta">Series watch</span></div>
+      <h3>The Ashes start in 11 days</h3>
+      <div class="desc-sm">Australia host England · the Gabba, Brisbane</div>
+    </div>
+  </div>
+
+  <div class="ticker-section">
+    <div class="section-head">
+      <h2 class="section-title">Live feed</h2>
+      <span class="section-sub" id="feedMeta">Checked 30 seconds ago</span>
+    </div>
+    <div class="ticker" id="feed"></div>
+  </div>
+
+  <div class="ticker-section">
+    <div class="section-head">
+      <h2 class="section-title">While you wait</h2>
+      <span class="section-sub">No live match doesn't mean nothing's moving</span>
+    </div>
+    <div class="digest-strip">
+      <div class="digest-item"><span class="digest-tag">SQUAD</span><span class="digest-text">England have named their squad for the Ashes tour — two uncapped players get the call.</span></div>
+      <div class="digest-item"><span class="digest-tag">INJURY</span><span class="digest-text">Jasprit Bumrah passed his fitness test and is available for selection again.</span></div>
+      <div class="digest-item"><span class="digest-tag">RANKINGS</span><span class="digest-text">India hang on to the No.1 Test ranking in the latest ICC update.</span></div>
+      <div class="digest-item"><span class="digest-tag">LEAGUE</span><span class="digest-text">PSL 2027 player draft date confirmed — franchises begin retention talks next week.</span></div>
+      <div class="digest-item"><span class="digest-tag">WOMEN'S</span><span class="digest-text">Australia name their squad for the Women's Ashes, with two uncapped fast bowlers included.</span></div>
     </div>
   </div>
 
   <div class="onboard" id="onboard">
-    <h2>What should wake your phone up?</h2>
-    <p>Pick a squad or two. This is a test build, so it's Pakistan cricket only for now.</p>
+    <h2>Tell us who you actually follow</h2>
+    <p>Pick the teams that matter to you. We're starting with cricket — more sports and topics are coming once this proves itself.</p>
     <div class="chip-row" id="interestChips">
-      <div class="chip active" data-v="pak">Pakistan national team</div>
-      <div class="chip" data-v="babar">Babar Azam</div>
+      <div class="chip active" data-v="india">India</div>
+      <div class="chip active" data-v="australia">Australia</div>
+      <div class="chip" data-v="england">England</div>
+      <div class="chip" data-v="pakistan">Pakistan</div>
+      <div class="chip" data-v="southafrica">South Africa</div>
+      <div class="chip" data-v="newzealand">New Zealand</div>
+      <div class="chip" data-v="ipl">IPL</div>
       <div class="chip" data-v="psl">PSL</div>
-      <div class="chip" data-v="rivals">Big India / Australia / England clashes</div>
+      <div class="chip" data-v="bbl">Big Bash</div>
+      <div class="chip" data-v="womens">Women's cricket</div>
     </div>
-    <p style="margin-bottom:8px;">How much do you want to hear from us?</p>
+    <p style="margin-bottom:8px; font-size:13.5px;">And how loud should we be about it?</p>
     <div class="intensity-row" id="intensityRow">
       <div class="intensity" data-v="minimal">Minimal<br>Only huge stuff</div>
       <div class="intensity active" data-v="important">Important<br>Major + notable</div>
@@ -330,12 +373,8 @@ body {
     <div class="enable-note">Your browser will ask permission. No account, no email, nothing to download.</div>
   </div>
 
-  <p class="feed-label" id="feedLabel">Live feed</p>
-  <div class="feed" id="feed"></div>
-
   <div class="footer-note">
-    This is a one-person test build — not a company, not a finished product.<br>
-    Built to see if this kind of alert is actually useful before building it out further.
+    This is a one-person test build, not a finished product — built to see if this kind of alert is actually useful.
   </div>
 
 </div>
@@ -345,29 +384,41 @@ body {
 <script>
 (function () {
   var feedEl = document.getElementById('feed');
-  var statusDot = document.getElementById('statusDot');
-  var statusText = document.getElementById('statusText');
+  var feedMeta = document.getElementById('feedMeta');
+  var pillDot = document.getElementById('pillDot');
+  var pillText = document.getElementById('pillText');
   var bellBtn = document.getElementById('bellBtn');
-  var bellLabel = document.getElementById('bellLabel');
   var enableBtn = document.getElementById('enableBtn');
   var toast = document.getElementById('toast');
   var onboard = document.getElementById('onboard');
+  var topbar = document.querySelector('.topbar');
+  var knownAlertIds = {};
 
-  var interests = { pak: true, babar: false, psl: false, rivals: false };
-  var intensity = 'important';
-  var alertsOn = false;
+  // header compresses slightly once you've actually scrolled — small, real, not decorative
+  window.addEventListener('scroll', function () {
+    topbar.classList.toggle('compact', window.scrollY > 24);
+  }, { passive: true });
+
+  // sections reveal once they enter view — one pass, no repeat, no bounce
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in-view'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.bento, .ticker-section, .onboard').forEach(function (el) {
+      el.classList.add('on-scroll');
+      io.observe(el);
+    });
+  }
 
   document.querySelectorAll('#interestChips .chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      chip.classList.toggle('active');
-      interests[chip.dataset.v] = chip.classList.contains('active');
-    });
+    chip.addEventListener('click', function () { chip.classList.toggle('active'); });
   });
   document.querySelectorAll('#intensityRow .intensity').forEach(function (btn) {
     btn.addEventListener('click', function () {
       document.querySelectorAll('#intensityRow .intensity').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
-      intensity = btn.dataset.v;
     });
   });
 
@@ -376,61 +427,78 @@ body {
     toast.classList.add('show');
     setTimeout(function () { toast.classList.remove('show'); }, 3200);
   }
+  var BACKEND_URL = 'https://cricradar-backend-production.up.railway.app';
 
+  function urlBase64ToUint8Array(base64String) {
+    var padding = '='.repeat((4 - base64String.length % 4) % 4);
+    var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    var rawData = atob(base64);
+    var outputArray = new Uint8Array(rawData.length);
+    for (var i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+    return outputArray;
+  }
+
+  // Real push: register the background service worker, ask permission,
+  // subscribe with the browser's push service, then hand that subscription
+  // to our backend so it can actually notify this device later — even closed.
   function requestPush() {
-    if (!('Notification' in window)) {
-      showToast('Push not supported in this browser — alerts will still show in-app.');
-      setAlertsOn(true);
+    if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+      showToast('Push isn\'t supported in this browser.');
       return;
     }
     Notification.requestPermission().then(function (perm) {
-      if (perm === 'granted') {
+      if (perm !== 'granted') { showToast('Notifications blocked — you can still check back here.'); return; }
+
+      navigator.serviceWorker.register('sw.js').then(function (registration) {
+        return fetch(BACKEND_URL + '/api/push/public-key')
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (!data.publicKey) { showToast('Push isn\'t set up on the backend yet.'); return; }
+            return registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(data.publicKey),
+            });
+          });
+      }).then(function (subscription) {
+        if (!subscription) return;
+        return fetch(BACKEND_URL + '/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(subscription),
+        });
+      }).then(function () {
         setAlertsOn(true);
-        showToast('Alerts on. You\'ll get the next Pakistan update here.');
-        new Notification('CricRadar', { body: 'Alerts enabled. Sit back — we\'ll ping you when it matters.' });
-      } else {
-        showToast('Notifications blocked — you can still watch the live feed below.');
-      }
+        showToast('Alerts on — you\'ll get these even with the site closed.');
+      }).catch(function (err) {
+        console.error('Push setup failed:', err);
+        showToast('Couldn\'t finish setting up alerts — try again in a moment.');
+      });
     });
   }
-
   function setAlertsOn(v) {
-    alertsOn = v;
     bellBtn.classList.toggle('on', v);
-    bellLabel.textContent = v ? 'Alerts on' : 'Enable alerts';
+    bellBtn.textContent = v ? 'Alerts on' : 'Enable alerts';
   }
-
-  bellBtn.addEventListener('click', function () {
-    if (!alertsOn) requestPush();
-  });
+  bellBtn.addEventListener('click', function () { requestPush(); });
   enableBtn.addEventListener('click', function () {
     requestPush();
     onboard.style.opacity = '0.55';
     onboard.style.pointerEvents = 'none';
   });
 
-  // ---- live backend connection ----
-  // This is the address of the real 24/7 program checking cricket scores.
-  var BACKEND_URL = 'https://cricradar-backend-production.up.railway.app';
-
-  var liveEvents = [];
-
-  function iconFor(tag) {
-    if (/result|win/i.test(tag)) return { icon: '🏏', cls: 'win' };
-    if (/injury/i.test(tag)) return { icon: '🩹', cls: 'injury' };
-    if (/upcoming|fixture/i.test(tag)) return { icon: '📅', cls: 'fixture' };
-    if (/digest/i.test(tag)) return { icon: '📰', cls: 'digest' };
-    return { icon: '🏏', cls: 'win' };
-  }
-
-  function timeAgo(iso) {
-    var diffMs = Date.now() - new Date(iso).getTime();
-    var mins = Math.round(diffMs / 60000);
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return mins + 'm ago';
+  function timeLabel(iso) {
+    var mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (mins < 1) return 'now';
+    if (mins < 60) return mins + 'm';
     var hrs = Math.round(mins / 60);
-    if (hrs < 24) return hrs + 'h ago';
-    return Math.round(hrs / 24) + 'd ago';
+    if (hrs < 24) return hrs + 'h';
+    return Math.round(hrs / 24) + 'd';
+  }
+  function badgeFor(tag) {
+    if (/result|win/i.test(tag)) return 'result';
+    if (/injury|watch/i.test(tag)) return 'watch';
+    if (/breaking|live/i.test(tag)) return 'breaking';
+    return '';
   }
 
   function fetchLiveFeed() {
@@ -438,64 +506,61 @@ body {
       .then(function (r) { return r.json(); })
       .then(function (data) {
         var alerts = data.alerts || [];
-        if (alerts.length > 0) {
-          statusDot.classList.add('live');
-          statusText.textContent = 'Connected — ' + alerts.length + ' update' + (alerts.length === 1 ? '' : 's') + ' tracked';
-        } else {
-          statusText.textContent = 'Connected — watching for Pakistan matches, nothing yet';
-        }
-        liveEvents = alerts.map(function (a) {
-          var vis = iconFor(a.tag);
-          return {
-            tag: a.tag, icon: vis.icon, cls: vis.cls, time: timeAgo(a.time),
-            headline: a.headline, sub: a.sub,
-            detail: '<b>Match tracked live.</b><br>This alert came straight from the live CricRadar backend.'
-          };
-        });
-        render();
+        pillDot.classList.add('active');
+        pillText.textContent = alerts.length > 0 ? alerts.length + ' tracked' : 'Watching';
+        renderFeed(alerts);
       })
-      .catch(function (err) {
-        statusText.textContent = 'Could not reach the live backend — check it\'s still running';
-        console.error('CricRadar fetch failed:', err);
+      .catch(function () {
+        pillText.textContent = 'Offline';
       });
   }
 
-  function render() {
+  var expandedId = null;
+
+  function exactTime(iso) {
+    var d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function renderFeed(alerts) {
     feedEl.innerHTML = '';
-    if (liveEvents.length === 0) {
+    if (alerts.length === 0) {
       var empty = document.createElement('div');
-      empty.className = 'card';
-      empty.innerHTML = '<div class="card-icon digest">📡</div><div class="card-body"><div class="card-headline">No Pakistan matches right now</div><p class="card-sub">The backend is checking every 30 seconds — this feed updates the moment something happens.</p></div>';
+      empty.className = 'empty-state';
+      empty.textContent = 'No live match right now — this feed updates the moment one starts.';
       feedEl.appendChild(empty);
       return;
     }
-    liveEvents.forEach(function (ev, i) {
-      var card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML =
-        '<div class="card-icon ' + ev.cls + '">' + ev.icon + '</div>' +
-        '<div class="card-body">' +
-          '<div class="card-top"><span class="card-tag">' + ev.tag + '</span><span class="card-time">' + ev.time + '</span></div>' +
-          '<div class="card-headline">' + ev.headline + '</div>' +
-          '<p class="card-sub">' + ev.sub + '</p>' +
-          '<button class="card-expand" data-i="' + i + '">Show more</button>' +
-          '<div class="card-detail" id="detail-' + i + '">' + ev.detail + '</div>' +
+    alerts.forEach(function (a) {
+      var badge = badgeFor(a.tag);
+      var isNew = !knownAlertIds[a.id];
+      knownAlertIds[a.id] = true;
+      var row = document.createElement('div');
+      row.className = 'tick' + (isNew ? ' tick-enter' : '') + (expandedId === a.id ? ' expanded' : '');
+      row.innerHTML =
+        '<div class="tick-time">' + timeLabel(a.time) + '</div>' +
+        '<div class="tick-badge ' + badge + (isNew ? ' tick-enter-badge' : '') + '"></div>' +
+        '<div class="tick-body">' +
+          '<div class="tick-tag ' + badge + '">' + a.tag + '</div>' +
+          '<div class="tick-headline">' + a.headline + '</div>' +
+          '<p class="tick-sub">' + a.sub + '</p>' +
+          '<div class="tick-detail">' +
+            '<div class="tick-detail-row">' +
+              '<span><strong>Confirmed</strong> ' + exactTime(a.time) + '</span>' +
+              '<span><strong>Tracked live</strong> by Sift</span>' +
+            '</div>' +
+          '</div>' +
         '</div>';
-      feedEl.appendChild(card);
-    });
-    document.querySelectorAll('.card-expand').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var d = document.getElementById('detail-' + btn.dataset.i);
-        var open = d.classList.toggle('open');
-        btn.textContent = open ? 'Show less' : 'Show more';
+      row.addEventListener('click', function () {
+        expandedId = expandedId === a.id ? null : a.id;
+        renderFeed(alerts);
       });
+      feedEl.appendChild(row);
     });
   }
 
-  statusText.textContent = 'Connecting to CricRadar backend…';
   fetchLiveFeed();
-  setInterval(fetchLiveFeed, 30000); // refresh from the real backend every 30 seconds
-
+  setInterval(fetchLiveFeed, 30000);
 })();
 </script>
 </body>
