@@ -559,10 +559,73 @@ a { color: inherit; }
   }
 
   var expandedId = null;
+  var detailCache = {};
 
   function exactTime(iso) {
     var d = new Date(iso);
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Best-effort extraction of "Team A vs Team B" from a headline like
+  // "India vs Australia, 2nd ODI is live" — good enough to search Highlightly.
+  function extractTeams(headline) {
+    var m = headline.match(/([A-Za-z .]+?)\s+(?:vs|v)\.?\s+([A-Za-z .]+?)(?:,|\s+is|\s+at|$)/i);
+    if (!m) return null;
+    return { home: m[1].trim(), away: m[2].trim() };
+  }
+
+  function renderDetailBody(container, alert) {
+    var teams = extractTeams(alert.headline);
+    if (!teams) {
+      container.innerHTML = '<div class="tick-detail-row"><span><strong>Confirmed</strong> ' + exactTime(alert.time) + '</span></div>';
+      return;
+    }
+    if (detailCache[alert.id] === 'loading') return;
+    if (detailCache[alert.id]) {
+      container.innerHTML = detailCache[alert.id];
+      return;
+    }
+
+    container.innerHTML = '<div class="tick-detail-row"><span>Loading match detail…</span></div>';
+    detailCache[alert.id] = 'loading';
+
+    var params = new URLSearchParams({ home: teams.home, away: teams.away });
+    fetch(BACKEND_URL + '/api/match-detail?' + params)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var html;
+        if (!data.ok || !data.match) {
+          html = '<div class="tick-detail-row"><span><strong>Confirmed</strong> ' + exactTime(alert.time) + '</span><span>Full detail not available for this match yet</span></div>';
+        } else {
+          html = buildDetailHtml(data.match, alert);
+        }
+        detailCache[alert.id] = html;
+        if (expandedId === alert.id) container.innerHTML = html;
+      })
+      .catch(function () {
+        var html = '<div class="tick-detail-row"><span><strong>Confirmed</strong> ' + exactTime(alert.time) + '</span></div>';
+        detailCache[alert.id] = html;
+        if (expandedId === alert.id) container.innerHTML = html;
+      });
+  }
+
+  function buildDetailHtml(match, alert) {
+    var parts = [];
+    if (match.venue && match.venue.name) {
+      parts.push('<span><strong>Venue</strong> ' + match.venue.name + (match.venue.city ? ', ' + match.venue.city : '') + '</span>');
+    }
+    if (match.state && match.state.report) {
+      parts.push('<span><strong>Report</strong> ' + match.state.report + '</span>');
+    }
+    var best = (match.bestBatsmen || [])[0];
+    var topBatter = best && best.players && best.players[0];
+    if (topBatter && topBatter.statistics) {
+      parts.push('<span><strong>Top run-scorer</strong> ' + topBatter.name + ' — ' + topBatter.statistics.runs + ' runs</span>');
+    }
+    if (parts.length === 0) {
+      parts.push('<span><strong>Confirmed</strong> ' + exactTime(alert.time) + '</span>');
+    }
+    return '<div class="tick-detail-row">' + parts.join('') + '</div>';
   }
 
   function renderFeed(alerts) {
@@ -587,18 +650,16 @@ a { color: inherit; }
           '<div class="tick-tag ' + badge + '">' + a.tag + '</div>' +
           '<div class="tick-headline">' + a.headline + '</div>' +
           '<p class="tick-sub">' + a.sub + '</p>' +
-          '<div class="tick-detail">' +
-            '<div class="tick-detail-row">' +
-              '<span><strong>Confirmed</strong> ' + exactTime(a.time) + '</span>' +
-              '<span><strong>Tracked live</strong> by Sift</span>' +
-            '</div>' +
-          '</div>' +
+          '<div class="tick-detail" id="detail-' + a.id + '"></div>' +
         '</div>';
       row.addEventListener('click', function () {
         expandedId = expandedId === a.id ? null : a.id;
         renderFeed(alerts);
       });
       feedEl.appendChild(row);
+      if (expandedId === a.id) {
+        renderDetailBody(row.querySelector('#detail-' + a.id), a);
+      }
     });
   }
 
