@@ -512,6 +512,25 @@ a { color: inherit; }
       });
   }
 
+  function fetchSeries() {
+    fetch(BACKEND_URL + '/api/series')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var series = data.series || [];
+        var h = document.getElementById('seriesWatchHeadline');
+        var d = document.getElementById('seriesWatchDesc');
+        if (series.length === 0) {
+          h.textContent = 'Not available yet';
+          d.textContent = 'This fills in once Sift finds a relevant series in progress.';
+          return;
+        }
+        var s = series[0];
+        h.textContent = s.name || 'Series in progress';
+        d.textContent = (s.matches ? s.matches + ' matches' : '') + (s.startDate ? ' · from ' + s.startDate : '');
+      })
+      .catch(function () { /* leave the honest empty state as-is */ });
+  }
+
   // Fills the top bento block from real tracked data only — never invented.
   function updateBento(alerts) {
     var mainHeadline = document.getElementById('mainHeadline');
@@ -585,6 +604,9 @@ a { color: inherit; }
 
   fetchLiveFeed();
   setInterval(fetchLiveFeed, 30000);
+
+  fetchSeries();
+  setInterval(fetchSeries, 5 * 60 * 1000); // series data changes slowly — check every 5 min is plenty
 
   // Check on load whether this device already has a live push subscription,
   // so the button shows the correct state instead of forgetting on refresh.
