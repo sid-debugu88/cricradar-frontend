@@ -585,6 +585,17 @@ a { color: inherit; }
 
   fetchLiveFeed();
   setInterval(fetchLiveFeed, 30000);
+
+  // Check on load whether this device already has a live push subscription,
+  // so the button shows the correct state instead of forgetting on refresh.
+  if ('serviceWorker' in navigator && 'PushManager' in window) {
+    navigator.serviceWorker.getRegistration().then(function (reg) {
+      if (!reg) return;
+      return reg.pushManager.getSubscription();
+    }).then(function (sub) {
+      if (sub) setAlertsOn(true);
+    }).catch(function () { /* no existing registration yet — fine, leave as-is */ });
+  }
 })();
 </script>
 </body>
