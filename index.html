@@ -309,20 +309,20 @@ a { color: inherit; }
     <div class="bento-main" id="bentoMain">
       <div class="tag-row">
         <span class="tag-live" id="mainTagLive" style="display:none;"><span class="dot"></span>LIVE</span>
-        <span class="tag-meta" id="mainMeta">Next up</span>
+        <span class="tag-meta" id="mainMeta">Live feed</span>
       </div>
-      <h2 id="mainHeadline">No live match right now</h2>
-      <p class="desc" id="mainDesc">The next confirmed international fixture shows up here the second it's locked in — Sift checks in on world cricket every 30 seconds, day and night.</p>
+      <h2 id="mainHeadline">Checking for live matches…</h2>
+      <p class="desc" id="mainDesc">Sift checks in on world cricket every 30 seconds, day and night.</p>
     </div>
     <div class="bento-card">
       <div class="tag-row" style="margin-bottom:0;"><span class="tag-meta">Last result</span></div>
-      <h3>Australia beat India by 4 wickets</h3>
-      <div class="desc-sm">Labuschagne 76* — 2nd ODI, Melbourne</div>
+      <h3 id="lastResultHeadline">Not available yet</h3>
+      <div class="desc-sm" id="lastResultDesc">This will fill in once Sift has tracked a completed match.</div>
     </div>
     <div class="bento-card">
       <div class="tag-row" style="margin-bottom:0;"><span class="tag-meta">Series watch</span></div>
-      <h3>The Ashes start in 11 days</h3>
-      <div class="desc-sm">Australia host England · the Gabba, Brisbane</div>
+      <h3 id="seriesWatchHeadline">Not available yet</h3>
+      <div class="desc-sm" id="seriesWatchDesc">Upcoming series schedules are coming in a future update.</div>
     </div>
   </div>
 
@@ -339,12 +339,8 @@ a { color: inherit; }
       <h2 class="section-title">While you wait</h2>
       <span class="section-sub">No live match doesn't mean nothing's moving</span>
     </div>
-    <div class="digest-strip">
-      <div class="digest-item"><span class="digest-tag">SQUAD</span><span class="digest-text">England have named their squad for the Ashes tour — two uncapped players get the call.</span></div>
-      <div class="digest-item"><span class="digest-tag">INJURY</span><span class="digest-text">Jasprit Bumrah passed his fitness test and is available for selection again.</span></div>
-      <div class="digest-item"><span class="digest-tag">RANKINGS</span><span class="digest-text">India hang on to the No.1 Test ranking in the latest ICC update.</span></div>
-      <div class="digest-item"><span class="digest-tag">LEAGUE</span><span class="digest-text">PSL 2027 player draft date confirmed — franchises begin retention talks next week.</span></div>
-      <div class="digest-item"><span class="digest-tag">WOMEN'S</span><span class="digest-text">Australia name their squad for the Women's Ashes, with two uncapped fast bowlers included.</span></div>
+    <div class="digest-strip" id="digestStrip">
+      <div class="digest-item"><span class="digest-text" style="color:var(--text-dim);">Nothing tracked yet today — this fills in as Sift catches squad news, injuries, and rankings updates.</span></div>
     </div>
   </div>
 
@@ -509,10 +505,38 @@ a { color: inherit; }
         pillDot.classList.add('active');
         pillText.textContent = alerts.length > 0 ? alerts.length + ' tracked' : 'Watching';
         renderFeed(alerts);
+        updateBento(alerts);
       })
       .catch(function () {
         pillText.textContent = 'Offline';
       });
+  }
+
+  // Fills the top bento block from real tracked data only — never invented.
+  function updateBento(alerts) {
+    var mainHeadline = document.getElementById('mainHeadline');
+    var mainDesc = document.getElementById('mainDesc');
+    var mainTagLive = document.getElementById('mainTagLive');
+    var lastResultH = document.getElementById('lastResultHeadline');
+    var lastResultD = document.getElementById('lastResultDesc');
+
+    if (alerts.length === 0) {
+      mainHeadline.textContent = 'No live match right now';
+      mainDesc.textContent = 'Sift checks in on world cricket every 30 seconds — this updates the moment something starts.';
+      mainTagLive.style.display = 'none';
+      return;
+    }
+
+    var latest = alerts[0];
+    mainHeadline.textContent = latest.headline;
+    mainDesc.textContent = latest.sub || 'Tracked live by Sift.';
+    mainTagLive.style.display = /live|breaking/i.test(latest.tag) ? 'flex' : 'none';
+
+    var result = alerts.find(function (a) { return /result|won|beat/i.test(a.tag + a.headline); });
+    if (result) {
+      lastResultH.textContent = result.headline;
+      lastResultD.textContent = result.sub || '';
+    }
   }
 
   var expandedId = null;
