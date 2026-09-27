@@ -669,14 +669,23 @@ a { color: inherit; }
   fetchSeries();
   setInterval(fetchSeries, 5 * 60 * 1000); // series data changes slowly — check every 5 min is plenty
 
-  // Check on load whether this device already has a live push subscription,
-  // so the button shows the correct state instead of forgetting on refresh.
+  // On load, if this browser already has a push subscription, re-send it to
+  // the backend every time — Railway wipes our in-memory subscriber list on
+  // every redeploy, so "the browser remembers" isn't enough; the backend has
+  // to be re-told, or notifications silently stop reaching a device that
+  // thinks it's still subscribed.
   if ('serviceWorker' in navigator && 'PushManager' in window) {
     navigator.serviceWorker.getRegistration().then(function (reg) {
       if (!reg) return;
       return reg.pushManager.getSubscription();
     }).then(function (sub) {
-      if (sub) setAlertsOn(true);
+      if (!sub) return;
+      setAlertsOn(true);
+      return fetch(BACKEND_URL + '/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sub),
+      });
     }).catch(function () { /* no existing registration yet — fine, leave as-is */ });
   }
 })();
