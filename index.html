@@ -237,6 +237,76 @@ a { color: inherit; }
 }
 .digest-text { font-size: 14px; line-height: 1.55; color: var(--text); }
 
+
+/* ---------- notification helper banner ---------- */
+.notice {
+  display: none; margin: 0 0 24px; padding: 14px 16px; border-radius: 10px;
+  border: 1px solid rgba(255,181,71,0.35); background: rgba(255,181,71,0.08);
+  font-size: 13.5px; line-height: 1.6; color: var(--text);
+}
+.notice.show { display: block; }
+.notice strong { color: var(--amber); font-weight: 600; }
+
+/* ---------- match cards ---------- */
+.match-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.match-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px;
+  cursor: pointer; transition: border-color 0.25s ease, transform 0.25s ease; text-align: left;
+  font-family: var(--font-body); color: var(--text); width: 100%;
+}
+.match-card:hover { border-color: rgba(61,107,255,0.4); transform: translateY(-2px); }
+.match-card:focus-visible { outline: 2px solid var(--blue-glow); outline-offset: 2px; }
+.mc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
+.mc-type { font-size: 11px; font-weight: 700; letter-spacing: 0.03em; color: var(--text-dim); text-transform: uppercase; }
+.mc-state { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
+.mc-state.live { background: var(--red); color: #fff; }
+.mc-state.upcoming { background: rgba(61,107,255,0.14); color: var(--blue-glow); }
+.mc-state.done { background: rgba(34,197,94,0.14); color: var(--green); }
+.mc-team { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 4px 0; }
+.mc-team-name { font-size: 15px; font-weight: 600; }
+.mc-team-score { font-size: 14px; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+.mc-status { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text-soft); line-height: 1.5; }
+
+/* ---------- match detail panel ---------- */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 60; display: none;
+  align-items: flex-end; justify-content: center;
+}
+.overlay.open { display: flex; }
+.sheet {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 16px 16px 0 0;
+  width: 100%; max-width: 720px; max-height: 88vh; overflow-y: auto; padding: 24px 24px 40px;
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .overlay.open .sheet { animation: sheetUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+  @keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+}
+.sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.sheet-title { font-family: var(--font-head); font-size: 24px; font-weight: 500; line-height: 1.25; margin: 0; }
+.sheet-sub { font-size: 13px; color: var(--text-soft); margin: 6px 0 0; }
+.sheet-close {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 8px;
+  width: 36px; height: 36px; font-size: 18px; cursor: pointer; flex: none;
+}
+.score-block { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.score-line { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; gap: 12px; }
+.score-line .who { font-size: 17px; font-weight: 600; }
+.score-line .runs { font-size: 20px; font-variant-numeric: tabular-nums; }
+.score-line .overs { font-size: 12.5px; color: var(--text-dim); margin-left: 6px; }
+.score-status { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 14px; color: var(--blue-glow); font-weight: 500; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+@media (max-width: 520px) { .info-grid { grid-template-columns: 1fr; } }
+.info-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.info-label { font-size: 11px; font-weight: 700; letter-spacing: 0.03em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; }
+.info-value { font-size: 14.5px; line-height: 1.45; }
+.sheet-section-title { font-family: var(--font-head); font-size: 17px; font-weight: 500; margin: 22px 0 10px; }
+.perf-row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.perf-row:last-child { border-bottom: none; }
+.perf-row .p-name { font-weight: 500; }
+.perf-row .p-stat { color: var(--text-soft); font-variant-numeric: tabular-nums; text-align: right; }
+.sheet-note { font-size: 12.5px; color: var(--text-dim); line-height: 1.6; margin-top: 16px; }
+
 /* ---------- onboarding ---------- */
 .onboard {
   background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 28px;
@@ -303,6 +373,16 @@ a { color: inherit; }
   <div class="section-statement">
     <p>A wicket falls in Melbourne. A player pulls up injured in Multan. A result comes in from a match you didn't know was even on. Somewhere, all day, cricket is happening — and almost none of it reaches you until hours later, buried in fifty other headlines.</p>
     <p class="statement-lede">So we stopped trying to show you everything.</p>
+  </div>
+
+  <div class="notice" id="notice" role="status"></div>
+
+  <div class="ticker-section" id="matchesSection">
+    <div class="section-head">
+      <h2 class="section-title">Matches</h2>
+      <span class="section-sub" id="matchesMeta">Tap a match for the full picture</span>
+    </div>
+    <div class="match-grid" id="matchGrid"></div>
   </div>
 
   <div class="bento">
@@ -375,6 +455,10 @@ a { color: inherit; }
 
 </div>
 
+<div class="overlay" id="overlay" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" id="sheet"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -443,7 +527,7 @@ a { color: inherit; }
       return;
     }
     Notification.requestPermission().then(function (perm) {
-      if (perm !== 'granted') { showToast('Notifications blocked — you can still check back here.'); return; }
+      if (perm !== 'granted') { updateNotice(); showToast('Notifications blocked — you can still check back here.'); return; }
 
       navigator.serviceWorker.register('sw.js').then(function (registration) {
         return fetch(BACKEND_URL + '/api/push/public-key')
@@ -464,6 +548,7 @@ a { color: inherit; }
         });
       }).then(function () {
         setAlertsOn(true);
+        updateNotice();
         showToast('Alerts on — you\'ll get these even with the site closed.');
       }).catch(function (err) {
         console.error('Push setup failed:', err);
@@ -531,30 +616,48 @@ a { color: inherit; }
       .catch(function () { /* leave the honest empty state as-is */ });
   }
 
-  // Fills the top bento block from real tracked data only — never invented.
+  // Fills the bento cards from real tracked data only, never invented.
+  // Priority for the big card: a live match, then the next upcoming one, then the latest result.
   function updateBento(alerts) {
     var mainHeadline = document.getElementById('mainHeadline');
     var mainDesc = document.getElementById('mainDesc');
+    var mainMeta = document.getElementById('mainMeta');
     var mainTagLive = document.getElementById('mainTagLive');
     var lastResultH = document.getElementById('lastResultHeadline');
     var lastResultD = document.getElementById('lastResultDesc');
 
-    if (alerts.length === 0) {
-      mainHeadline.textContent = 'No live match right now';
-      mainDesc.textContent = 'Sift checks in on world cricket regularly — this updates the moment something starts.';
+    var all = Object.keys(matchesById).map(function (k) { return matchesById[k]; });
+    var live = all.filter(function (m) { return m.matchStarted && !m.matchEnded; })[0];
+    var upcoming = all.filter(function (m) { return !m.matchStarted && !m.matchEnded; })
+      .sort(function (a, b) { return new Date(a.dateTimeGMT) - new Date(b.dateTimeGMT); })[0];
+    var done = all.filter(function (m) { return m.matchEnded; })[0];
+
+    var main = live || upcoming || done;
+    if (main) {
+      var t = (main.teams && main.teams.length === 2) ? main.teams[0] + ' vs ' + main.teams[1] : main.name;
+      mainHeadline.textContent = t;
+      var stMain = matchState(main);
+      mainMeta.textContent = stMain.key === 'live' ? 'Live now' : (stMain.key === 'upcoming' ? 'Next up' : 'Latest result');
+      mainTagLive.style.display = stMain.key === 'live' ? 'flex' : 'none';
+      mainDesc.textContent = stMain.key === 'upcoming'
+        ? 'Starts ' + whenLabel(main) + (main.venue ? ' at ' + main.venue : '')
+        : ((main.status || '') + (main.score && main.score.length ? ' · ' + main.score.map(function (sc) { return sc.r + '/' + sc.w; }).join(' · ') : ''));
+      var mainCard = document.getElementById('bentoMain');
+      mainCard.style.cursor = 'pointer';
+      mainCard.onclick = function () { openMatch(main.id); };
+    } else {
+      mainHeadline.textContent = 'No match on right now';
+      mainMeta.textContent = 'Live feed';
       mainTagLive.style.display = 'none';
-      return;
+      mainDesc.textContent = 'Sift tracks international and major league cricket. The next fixture appears here the moment one is scheduled.';
     }
 
-    var latest = alerts[0];
-    mainHeadline.textContent = latest.headline;
-    mainDesc.textContent = latest.sub || 'Tracked live by Sift.';
-    mainTagLive.style.display = /live|breaking/i.test(latest.tag) ? 'flex' : 'none';
-
-    var result = alerts.find(function (a) { return /result|won|beat/i.test(a.tag + a.headline); });
-    if (result) {
-      lastResultH.textContent = result.headline;
-      lastResultD.textContent = result.sub || '';
+    if (done) {
+      lastResultH.textContent = (done.teams && done.teams.length === 2) ? done.teams[0] + ' vs ' + done.teams[1] : done.name;
+      lastResultD.textContent = done.status || '';
+    } else if (alerts && alerts.length) {
+      var r = alerts.find(function (a) { return /result|won|beat/i.test(a.tag + a.headline); });
+      if (r) { lastResultH.textContent = r.headline; lastResultD.textContent = r.sub || ''; }
     }
   }
 
@@ -663,8 +766,222 @@ a { color: inherit; }
     });
   }
 
+
+  // ---------- safety: match data comes from outside APIs, never trust it as HTML ----------
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // ---------- notification helper: tell people why they might get nothing ----------
+  var noticeEl = document.getElementById('notice');
+  function updateNotice() {
+    var ua = navigator.userAgent || '';
+    var isIOS = /iphone|ipad|ipod/i.test(ua);
+    var standalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    var msg = '';
+
+    if (isIOS && !standalone) {
+      msg = '<strong>On iPhone, alerts only work from your home screen.</strong> Tap the Share button, choose <em>Add to Home Screen</em>, then open Sift from that icon and turn on alerts.';
+    } else if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+      msg = '<strong>This browser can\'t receive alerts.</strong> Try Chrome or Edge, or on iPhone add Sift to your home screen first.';
+    } else if (Notification.permission === 'denied') {
+      msg = '<strong>Alerts are blocked for this site.</strong> Click the lock icon next to the address bar, set Notifications to Allow, then reload. If you still get nothing, check that notifications are switched on for your browser in your device settings.';
+    }
+
+    if (msg) { noticeEl.innerHTML = msg; noticeEl.classList.add('show'); }
+    else { noticeEl.classList.remove('show'); }
+  }
+  updateNotice();
+
+  // ---------- matches: live, upcoming and finished, from real data ----------
+  var matchGrid = document.getElementById('matchGrid');
+  var matchesMeta = document.getElementById('matchesMeta');
+  var matchesById = {};
+
+  function matchState(m) {
+    if (m.matchEnded) return { key: 'done', label: 'RESULT' };
+    if (m.matchStarted) return { key: 'live', label: 'LIVE' };
+    return { key: 'upcoming', label: 'UPCOMING' };
+  }
+  function scoreFor(m, i) {
+    var sc = (m.score || [])[i];
+    return sc ? (sc.r + '/' + sc.w + ' (' + sc.o + ' ov)') : '';
+  }
+  function whenLabel(m) {
+    if (!m.dateTimeGMT) return m.date || '';
+    var d = new Date(m.dateTimeGMT.indexOf('Z') === -1 ? m.dateTimeGMT + 'Z' : m.dateTimeGMT);
+    if (isNaN(d.getTime())) return m.date || '';
+    return d.toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  }
+
+  function renderMatches(matches) {
+    matchGrid.innerHTML = '';
+    matchesById = {};
+    if (!matches.length) {
+      var empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.style.gridColumn = '1 / -1';
+      empty.textContent = 'No matches involving the teams and leagues Sift tracks right now. This fills in as soon as one is scheduled or live.';
+      matchGrid.appendChild(empty);
+      matchesMeta.textContent = 'Nothing scheduled right now';
+      return;
+    }
+    matchesMeta.textContent = matches.length + ' tracked · tap one for the full picture';
+    matches.forEach(function (m) {
+      matchesById[m.id] = m;
+      var st = matchState(m);
+      var teams = (m.teams && m.teams.length === 2) ? m.teams : null;
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'match-card';
+      card.setAttribute('aria-label', 'Open details for ' + (m.name || 'match'));
+      var teamsHtml = teams
+        ? '<div class="mc-team"><span class="mc-team-name">' + esc(teams[0]) + '</span><span class="mc-team-score">' + esc(scoreFor(m, 0)) + '</span></div>' +
+          '<div class="mc-team"><span class="mc-team-name">' + esc(teams[1]) + '</span><span class="mc-team-score">' + esc(scoreFor(m, 1)) + '</span></div>'
+        : '<div class="mc-team"><span class="mc-team-name">' + esc(m.name) + '</span></div>';
+      var statusText = st.key === 'upcoming' ? ('Starts ' + whenLabel(m)) : (m.status || '');
+      card.innerHTML =
+        '<div class="mc-top"><span class="mc-type">' + esc(m.matchType || 'Match') + '</span><span class="mc-state ' + st.key + '">' + st.label + '</span></div>' +
+        teamsHtml +
+        '<div class="mc-status">' + esc(statusText) + '</div>';
+      card.addEventListener('click', function () { openMatch(m.id); });
+      matchGrid.appendChild(card);
+    });
+  }
+
+  function fetchMatches() {
+    fetch(BACKEND_URL + '/api/matches')
+      .then(function (r) { return r.json(); })
+      .then(function (data) { renderMatches(data.matches || []); updateBento([]); })
+      .catch(function () { /* leave whatever is showing */ });
+  }
+
+  // ---------- match detail panel ----------
+  var overlay = document.getElementById('overlay');
+  var sheet = document.getElementById('sheet');
+  var lastFocus = null;
+  var openMatchId = null;
+
+  function closeSheet() {
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    openMatchId = null;
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeSheet(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && overlay.classList.contains('open')) closeSheet(); });
+
+  function infoItem(label, value) {
+    if (!value) return '';
+    return '<div class="info-item"><div class="info-label">' + esc(label) + '</div><div class="info-value">' + esc(value) + '</div></div>';
+  }
+
+  function baseDetailHtml(m) {
+    var st = matchState(m);
+    var teams = (m.teams && m.teams.length === 2) ? m.teams : [];
+    var lines = '';
+    if ((m.score || []).length) {
+      lines = m.score.map(function (sc) {
+        return '<div class="score-line"><span class="who">' + esc((sc.inning || '').replace(/ Inning.*/i, '')) + '</span>' +
+          '<span><span class="runs">' + esc(sc.r) + '/' + esc(sc.w) + '</span><span class="overs">' + esc(sc.o) + ' ov</span></span></div>';
+      }).join('');
+    } else if (teams.length) {
+      lines = teams.map(function (t) { return '<div class="score-line"><span class="who">' + esc(t) + '</span></div>'; }).join('');
+    }
+    var statusLine = st.key === 'upcoming' ? ('Starts ' + whenLabel(m)) : (m.status || '');
+    return '<div class="score-block">' + lines + (statusLine ? '<div class="score-status">' + esc(statusLine) + '</div>' : '') + '</div>' +
+      '<div class="info-grid">' +
+        infoItem('Format', m.matchType ? String(m.matchType).toUpperCase() : '') +
+        infoItem('Venue', m.venue) +
+        infoItem(st.key === 'upcoming' ? 'Starts' : 'Date', whenLabel(m)) +
+        infoItem('Status', st.label.charAt(0) + st.label.slice(1).toLowerCase()) +
+      '</div>';
+  }
+
+  // Highlightly's real response shape is only known from its docs, so read it
+  // defensively: show whichever fields exist and skip the rest.
+  function richDetailHtml(d) {
+    if (!d) return '';
+    var out = '';
+    var extra = '';
+    if (d.venue && typeof d.venue === 'object') {
+      var v = [d.venue.name, d.venue.city, d.venue.country].filter(Boolean).join(', ');
+      extra += infoItem('Ground', v);
+    }
+    if (d.weather && typeof d.weather === 'object') {
+      var w = [d.weather.description || d.weather.condition, d.weather.temperature != null ? d.weather.temperature + '°' : ''].filter(Boolean).join(' · ');
+      extra += infoItem('Weather', w);
+    }
+    if (d.toss && typeof d.toss === 'object') {
+      extra += infoItem('Toss', d.toss.description || d.toss.text || '');
+    }
+    if (extra) out += '<div class="info-grid">' + extra + '</div>';
+
+    function perfBlock(title, list, fmt) {
+      var rows = [];
+      (list || []).forEach(function (grp) {
+        (grp.players || []).slice(0, 3).forEach(function (pl) {
+          var line = fmt(pl);
+          if (line) rows.push('<div class="perf-row"><span class="p-name">' + esc(pl.name) + '</span><span class="p-stat">' + esc(line) + '</span></div>');
+        });
+      });
+      return rows.length ? '<h3 class="sheet-section-title">' + esc(title) + '</h3>' + rows.join('') : '';
+    }
+    out += perfBlock('Top batters', d.bestBatsmen, function (pl) {
+      var s = pl.statistics || {};
+      return s.runs != null ? (s.runs + (s.balls != null ? ' (' + s.balls + ')' : '')) : '';
+    });
+    out += perfBlock('Top bowlers', d.bestBowlers, function (pl) {
+      var s = pl.statistics || {};
+      return (s.wickets != null && s.runs != null) ? (s.wickets + '/' + s.runs) : '';
+    });
+    return out;
+  }
+
+  function openMatch(id) {
+    var m = matchesById[id];
+    if (!m) return;
+    openMatchId = id;
+    lastFocus = document.activeElement;
+    var teams = (m.teams && m.teams.length === 2) ? m.teams : null;
+    sheet.innerHTML =
+      '<div class="sheet-head"><div><h2 class="sheet-title" id="sheetTitle">' + esc(teams ? teams[0] + ' vs ' + teams[1] : m.name) + '</h2>' +
+      '<p class="sheet-sub">' + esc(m.name || '') + '</p></div>' +
+      '<button class="sheet-close" id="sheetClose" aria-label="Close details" type="button">×</button></div>' +
+      baseDetailHtml(m) +
+      '<div id="richDetail"><p class="sheet-note">Loading player and ground details…</p></div>';
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('sheetClose').addEventListener('click', closeSheet);
+    document.getElementById('sheetClose').focus();
+
+    var rich = document.getElementById('richDetail');
+    if (!teams) { rich.innerHTML = ''; return; }
+    if (detailCache['m:' + id]) { rich.innerHTML = detailCache['m:' + id]; return; }
+
+    var params = new URLSearchParams({ home: teams[0], away: teams[1] });
+    fetch(BACKEND_URL + '/api/match-detail?' + params)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var html = (data.ok && data.match) ? richDetailHtml(data.match) : '';
+        if (!html) html = '<p class="sheet-note">Player stats, weather and ground details aren\'t available for this match yet. They appear here when our data source has them.</p>';
+        detailCache['m:' + id] = html;
+        if (openMatchId === id) rich.innerHTML = html;
+      })
+      .catch(function () {
+        if (openMatchId === id) rich.innerHTML = '<p class="sheet-note">Couldn\'t load extra details right now.</p>';
+      });
+  }
+
   fetchLiveFeed();
   setInterval(fetchLiveFeed, 30000);
+
+  fetchMatches();
+  setInterval(fetchMatches, 60 * 1000);
 
   fetchSeries();
   setInterval(fetchSeries, 5 * 60 * 1000); // series data changes slowly — check every 5 min is plenty
