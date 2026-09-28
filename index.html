@@ -854,7 +854,16 @@ a { color: inherit; }
   function fetchMatches() {
     fetch(BACKEND_URL + '/api/matches')
       .then(function (r) { return r.json(); })
-      .then(function (data) { renderMatches(data.matches || []); updateBento([]); })
+      .then(function (data) {
+        renderMatches(data.matches || []);
+        updateBento([]);
+        // Arrived from a tapped alert? Open that match once, then clean the URL.
+        var wanted = new URLSearchParams(location.search).get('match');
+        if (wanted && matchesById[wanted] && !openMatchId) {
+          openMatch(wanted);
+          history.replaceState(null, '', location.pathname);
+        }
+      })
       .catch(function () { /* leave whatever is showing */ });
   }
 
