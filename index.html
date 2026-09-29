@@ -333,6 +333,9 @@ a { color: inherit; }
   font-size: 14.5px; font-weight: 700; cursor: pointer; font-family: var(--font-body);
 }
 .enable-note { font-size: 11.5px; color: var(--text-dim); margin-top: 12px; text-align: center; line-height: 1.5; }
+.onboard-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.onboard-summary-label { font-size: 11px; font-weight: 700; letter-spacing: 0.03em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; }
+.onboard-summary-teams { font-size: 14.5px; color: var(--text); }
 
 .footer-note {
   padding: 30px 0 0; font-size: 12.5px; color: var(--text-dim); line-height: 1.7;
@@ -377,12 +380,12 @@ a { color: inherit; }
 
   <div class="notice" id="notice" role="status"></div>
 
-  <div class="ticker-section" id="matchesSection">
+  <div class="ticker-section" id="liveSection" style="display:none;">
     <div class="section-head">
-      <h2 class="section-title">Matches</h2>
-      <span class="section-sub" id="matchesMeta">Tap a match for the full picture</span>
+      <h2 class="section-title">Live now</h2>
+      <span class="section-sub" id="liveMeta"></span>
     </div>
-    <div class="match-grid" id="matchGrid"></div>
+    <div class="match-grid" id="liveGrid"></div>
   </div>
 
   <div class="bento">
@@ -408,23 +411,40 @@ a { color: inherit; }
 
   <div class="ticker-section">
     <div class="section-head">
-      <h2 class="section-title">Live feed</h2>
+      <h2 class="section-title">What's changed</h2>
       <span class="section-sub" id="feedMeta">Live tracking</span>
     </div>
     <div class="ticker" id="feed"></div>
   </div>
 
+  <div class="ticker-section" id="upcomingSection">
+    <div class="section-head">
+      <h2 class="section-title">Upcoming fixtures</h2>
+      <span class="section-sub" id="upcomingMeta"></span>
+    </div>
+    <div class="match-grid" id="upcomingGrid"></div>
+  </div>
+
+  <div class="ticker-section" id="resultsSection">
+    <div class="section-head">
+      <h2 class="section-title">Recent results</h2>
+      <span class="section-sub" id="resultsMeta"></span>
+    </div>
+    <div class="match-grid" id="resultsGrid"></div>
+  </div>
+
   <div class="ticker-section">
     <div class="section-head">
-      <h2 class="section-title">While you wait</h2>
-      <span class="section-sub">No live match doesn't mean nothing's moving</span>
+      <h2 class="section-title">Series in progress</h2>
+      <span class="section-sub">Tournaments Sift is watching right now</span>
     </div>
     <div class="digest-strip" id="digestStrip">
-      <div class="digest-item"><span class="digest-text" style="color:var(--text-dim);">Nothing tracked yet today — this fills in as Sift catches squad news, injuries, and rankings updates.</span></div>
+      <div class="digest-item"><span class="digest-text" style="color:var(--text-dim);">Checking for active series…</span></div>
     </div>
   </div>
 
   <div class="onboard" id="onboard">
+    <div id="onboardForm">
     <h2>Tell us who you actually follow</h2>
     <p>Pick the teams that matter to you. We're starting with cricket — more sports and topics are coming once this proves itself.</p>
     <div class="chip-row" id="interestChips">
@@ -447,6 +467,14 @@ a { color: inherit; }
     </div>
     <button class="enable-btn" id="enableBtn">Turn on alerts</button>
     <div class="enable-note">Your browser will ask permission. No account, no email, nothing to download.</div>
+    </div>
+    <div id="onboardSummary" class="onboard-summary" style="display:none;">
+      <div>
+        <div class="onboard-summary-label">Following</div>
+        <div class="onboard-summary-teams" id="onboardChosen"></div>
+      </div>
+      <button class="chip" id="onboardEdit" type="button">Edit</button>
+    </div>
   </div>
 
   <div class="footer-note">
@@ -492,13 +520,41 @@ a { color: inherit; }
     });
   }
 
+  // ---------- preferences: remembered on this device, so a reload doesn't wipe them ----------
+  var PREF_KEY = 'sift-prefs-v1';
+  function loadPrefs() {
+    try {
+      var raw = localStorage.getItem(PREF_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+  function savePrefs() {
+    try {
+      var teams = Array.from(document.querySelectorAll('#interestChips .chip.active')).map(function (c) { return c.dataset.v; });
+      var intensity = document.querySelector('#intensityRow .intensity.active');
+      localStorage.setItem(PREF_KEY, JSON.stringify({ teams: teams, intensity: intensity ? intensity.dataset.v : 'important', savedOnce: true }));
+    } catch (e) { /* storage unavailable — preferences just won't persist, nothing else breaks */ }
+  }
+  (function applyPrefs() {
+    var saved = loadPrefs();
+    if (!saved) return;
+    document.querySelectorAll('#interestChips .chip').forEach(function (chip) {
+      chip.classList.toggle('active', saved.teams.indexOf(chip.dataset.v) !== -1);
+    });
+    document.querySelectorAll('#intensityRow .intensity').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.v === saved.intensity);
+    });
+    if (saved.savedOnce) collapseOnboard();
+  })();
+
   document.querySelectorAll('#interestChips .chip').forEach(function (chip) {
-    chip.addEventListener('click', function () { chip.classList.toggle('active'); });
+    chip.addEventListener('click', function () { chip.classList.toggle('active'); savePrefs(); });
   });
   document.querySelectorAll('#intensityRow .intensity').forEach(function (btn) {
     btn.addEventListener('click', function () {
       document.querySelectorAll('#intensityRow .intensity').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
+      savePrefs();
     });
   });
 
@@ -563,9 +619,23 @@ a { color: inherit; }
   bellBtn.addEventListener('click', function () { requestPush(); });
   enableBtn.addEventListener('click', function () {
     requestPush();
-    onboard.style.opacity = '0.55';
-    onboard.style.pointerEvents = 'none';
+    savePrefs();
+    collapseOnboard();
   });
+
+  function collapseOnboard() {
+    var chosen = Array.from(document.querySelectorAll('#interestChips .chip.active')).map(function (c) { return c.textContent; });
+    var summary = document.getElementById('onboardSummary');
+    document.getElementById('onboardForm').style.display = 'none';
+    summary.style.display = 'flex';
+    document.getElementById('onboardChosen').textContent = chosen.length ? chosen.join(', ') : 'nothing selected yet';
+  }
+  function expandOnboard() {
+    document.getElementById('onboardForm').style.display = '';
+    document.getElementById('onboardSummary').style.display = 'none';
+  }
+  var editBtn = document.getElementById('onboardEdit');
+  if (editBtn) editBtn.addEventListener('click', expandOnboard);
 
   function timeLabel(iso) {
     var mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -795,9 +865,10 @@ a { color: inherit; }
   }
   updateNotice();
 
-  // ---------- matches: live, upcoming and finished, from real data ----------
-  var matchGrid = document.getElementById('matchGrid');
-  var matchesMeta = document.getElementById('matchesMeta');
+  // ---------- matches: split into live / upcoming / recent, from real data only ----------
+  var liveGrid = document.getElementById('liveGrid');
+  var upcomingGrid = document.getElementById('upcomingGrid');
+  var resultsGrid = document.getElementById('resultsGrid');
   var matchesById = {};
 
   function matchState(m) {
@@ -816,39 +887,62 @@ a { color: inherit; }
     return d.toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
   }
 
-  function renderMatches(matches) {
-    matchGrid.innerHTML = '';
-    matchesById = {};
+  function matchCard(m) {
+    matchesById[m.id] = m;
+    var st = matchState(m);
+    var teams = (m.teams && m.teams.length === 2) ? m.teams : null;
+    var card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'match-card';
+    card.setAttribute('aria-label', 'Open details for ' + (m.name || 'match'));
+    var teamsHtml = teams
+      ? '<div class="mc-team"><span class="mc-team-name">' + esc(teams[0]) + '</span><span class="mc-team-score">' + esc(scoreFor(m, 0)) + '</span></div>' +
+        '<div class="mc-team"><span class="mc-team-name">' + esc(teams[1]) + '</span><span class="mc-team-score">' + esc(scoreFor(m, 1)) + '</span></div>'
+      : '<div class="mc-team"><span class="mc-team-name">' + esc(m.name) + '</span></div>';
+    var statusText = st.key === 'upcoming' ? ('Starts ' + whenLabel(m)) : (m.status || '');
+    card.innerHTML =
+      '<div class="mc-top"><span class="mc-type">' + esc(m.matchType || 'Match') + '</span><span class="mc-state ' + st.key + '">' + st.label + '</span></div>' +
+      teamsHtml +
+      '<div class="mc-status">' + esc(statusText) + '</div>';
+    card.addEventListener('click', function () { openMatch(m.id); });
+    return card;
+  }
+
+  function fillGrid(grid, matches, emptyText) {
+    grid.innerHTML = '';
     if (!matches.length) {
       var empty = document.createElement('div');
       empty.className = 'empty-state';
       empty.style.gridColumn = '1 / -1';
-      empty.textContent = 'No matches involving the teams and leagues Sift tracks right now. This fills in as soon as one is scheduled or live.';
-      matchGrid.appendChild(empty);
-      matchesMeta.textContent = 'Nothing scheduled right now';
+      empty.textContent = emptyText;
+      grid.appendChild(empty);
       return;
     }
-    matchesMeta.textContent = matches.length + ' tracked · tap one for the full picture';
-    matches.forEach(function (m) {
-      matchesById[m.id] = m;
-      var st = matchState(m);
-      var teams = (m.teams && m.teams.length === 2) ? m.teams : null;
-      var card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'match-card';
-      card.setAttribute('aria-label', 'Open details for ' + (m.name || 'match'));
-      var teamsHtml = teams
-        ? '<div class="mc-team"><span class="mc-team-name">' + esc(teams[0]) + '</span><span class="mc-team-score">' + esc(scoreFor(m, 0)) + '</span></div>' +
-          '<div class="mc-team"><span class="mc-team-name">' + esc(teams[1]) + '</span><span class="mc-team-score">' + esc(scoreFor(m, 1)) + '</span></div>'
-        : '<div class="mc-team"><span class="mc-team-name">' + esc(m.name) + '</span></div>';
-      var statusText = st.key === 'upcoming' ? ('Starts ' + whenLabel(m)) : (m.status || '');
-      card.innerHTML =
-        '<div class="mc-top"><span class="mc-type">' + esc(m.matchType || 'Match') + '</span><span class="mc-state ' + st.key + '">' + st.label + '</span></div>' +
-        teamsHtml +
-        '<div class="mc-status">' + esc(statusText) + '</div>';
-      card.addEventListener('click', function () { openMatch(m.id); });
-      matchGrid.appendChild(card);
-    });
+    matches.forEach(function (m) { grid.appendChild(matchCard(m)); });
+  }
+
+  function renderMatches(matches) {
+    matchesById = {};
+    var live = matches.filter(function (m) { return m.matchStarted && !m.matchEnded; });
+    var upcoming = matches.filter(function (m) { return !m.matchStarted && !m.matchEnded; })
+      .sort(function (a, b) { return new Date(a.dateTimeGMT) - new Date(b.dateTimeGMT); });
+    var done = matches.filter(function (m) { return m.matchEnded; })
+      .sort(function (a, b) { return new Date(b.dateTimeGMT) - new Date(a.dateTimeGMT); });
+
+    var liveSection = document.getElementById('liveSection');
+    if (live.length) {
+      liveSection.style.display = '';
+      document.getElementById('liveMeta').textContent = live.length + ' live now';
+      fillGrid(liveGrid, live, '');
+    } else {
+      liveSection.style.display = 'none';
+    }
+
+    document.getElementById('upcomingMeta').textContent = upcoming.length ? upcoming.length + ' scheduled' : '';
+    fillGrid(upcomingGrid, upcoming, 'No fixtures confirmed yet for the teams and leagues Sift tracks. This fills in as soon as one is scheduled.');
+
+    document.getElementById('resultsMeta').textContent = done.length ? 'Last ' + Math.min(done.length, 6) : '';
+    fillGrid(resultsGrid, done.slice(0, 6), 'No completed matches tracked yet.');
   }
 
   function fetchMatches() {
@@ -863,6 +957,26 @@ a { color: inherit; }
           openMatch(wanted);
           history.replaceState(null, '', location.pathname);
         }
+      })
+      .catch(function () { /* leave whatever is showing */ });
+  }
+
+  // ---------- series digest: real tournaments, not placeholder text ----------
+  function fetchSeriesDigest() {
+    fetch(BACKEND_URL + '/api/series')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var list = data.series || [];
+        var strip = document.getElementById('digestStrip');
+        strip.innerHTML = '';
+        if (!list.length) {
+          strip.innerHTML = '<div class="digest-item"><span class="digest-text" style="color:var(--text-dim);">No active series matched right now. This fills in as tournaments start.</span></div>';
+          return;
+        }
+        list.slice(0, 6).forEach(function (s) {
+          var meta = [s.matches ? s.matches + ' matches' : '', s.startDate ? 'from ' + s.startDate : ''].filter(Boolean).join(' · ');
+          strip.innerHTML += '<div class="digest-item"><span class="digest-tag">SERIES</span><span class="digest-text">' + esc(s.name || 'Series') + (meta ? ' — ' + esc(meta) : '') + '</span></div>';
+        });
       })
       .catch(function () { /* leave whatever is showing */ });
   }
@@ -994,6 +1108,9 @@ a { color: inherit; }
 
   fetchSeries();
   setInterval(fetchSeries, 5 * 60 * 1000); // series data changes slowly — check every 5 min is plenty
+
+  fetchSeriesDigest();
+  setInterval(fetchSeriesDigest, 5 * 60 * 1000);
 
   // On load, if this browser already has a push subscription, re-send it to
   // the backend every time — Railway wipes our in-memory subscriber list on
