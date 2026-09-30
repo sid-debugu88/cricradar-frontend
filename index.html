@@ -939,7 +939,11 @@ a { color: inherit; }
     }
 
     document.getElementById('upcomingMeta').textContent = upcoming.length ? upcoming.length + ' scheduled' : '';
-    fillGrid(upcomingGrid, upcoming, 'No fixtures confirmed yet for the teams and leagues Sift tracks. This fills in as soon as one is scheduled.');
+    if (upcoming.length) {
+      fillGrid(upcomingGrid, upcoming, '');
+    } else {
+      renderUpcomingFallback(upcomingGrid);
+    }
 
     document.getElementById('resultsMeta').textContent = done.length ? 'Last ' + Math.min(done.length, 6) : '';
     fillGrid(resultsGrid, done.slice(0, 6), 'No completed matches tracked yet.');
@@ -956,6 +960,33 @@ a { color: inherit; }
     if (mins < 60) return mins + ' min ago';
     var hrs = Math.round(mins / 60);
     return hrs + 'h ago';
+  }
+
+  // When there's no specific fixture yet, at least show the next real series
+  // Sift is tracking — even if it's months away, "something's coming" beats
+  // a dead end. Never invents a date; if we truly have nothing, says so plainly.
+  var seriesCacheForFallback = [];
+  function renderUpcomingFallback(grid) {
+    grid.innerHTML = '';
+    if (!seriesCacheForFallback.length) {
+      var empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.style.gridColumn = '1 / -1';
+      empty.textContent = 'No confirmed fixtures or series right now for the teams Sift tracks. This fills in the moment one is scheduled.';
+      grid.appendChild(empty);
+      return;
+    }
+    seriesCacheForFallback.slice(0, 3).forEach(function (s) {
+      var card = document.createElement('div');
+      card.className = 'match-card';
+      card.style.cursor = 'default';
+      var when = s.startDate ? 'Starts ' + s.startDate : 'Date to be confirmed';
+      card.innerHTML =
+        '<div class="mc-top"><span class="mc-type">SERIES</span><span class="mc-state upcoming">UPCOMING</span></div>' +
+        '<div class="mc-team"><span class="mc-team-name">' + esc(s.name || 'Series') + '</span></div>' +
+        '<div class="mc-status">' + esc(when) + (s.matches ? ' · ' + esc(s.matches) + ' matches' : '') + '</div>';
+      grid.appendChild(card);
+    });
   }
 
   function fetchMatches() {
@@ -983,16 +1014,23 @@ a { color: inherit; }
       .then(function (r) { return r.json(); })
       .then(function (data) {
         var list = data.series || [];
+        seriesCacheForFallback = list; // shared with the "no fixtures yet" fallback above
         var strip = document.getElementById('digestStrip');
         strip.innerHTML = '';
         if (!list.length) {
           strip.innerHTML = '<div class="digest-item"><span class="digest-text" style="color:var(--text-dim);">No active series matched right now. This fills in as tournaments start.</span></div>';
-          return;
+        } else {
+          list.slice(0, 6).forEach(function (s) {
+            var meta = [s.matches ? s.matches + ' matches' : '', s.startDate ? 'from ' + s.startDate : ''].filter(Boolean).join(' · ');
+            strip.innerHTML += '<div class="digest-item"><span class="digest-tag">SERIES</span><span class="digest-text">' + esc(s.name || 'Series') + (meta ? ' — ' + esc(meta) : '') + '</span></div>';
+          });
         }
-        list.slice(0, 6).forEach(function (s) {
-          var meta = [s.matches ? s.matches + ' matches' : '', s.startDate ? 'from ' + s.startDate : ''].filter(Boolean).join(' · ');
-          strip.innerHTML += '<div class="digest-item"><span class="digest-tag">SERIES</span><span class="digest-text">' + esc(s.name || 'Series') + (meta ? ' — ' + esc(meta) : '') + '</span></div>';
-        });
+        // If matches had already loaded with no upcoming fixtures, refresh
+        // that section now that series data (the fallback source) has arrived.
+        var upcomingGridEl = document.getElementById('upcomingGrid');
+        if (upcomingGridEl && upcomingGridEl.children.length && upcomingGridEl.children[0].className === 'empty-state') {
+          renderUpcomingFallback(upcomingGridEl);
+        }
       })
       .catch(function () { /* leave whatever is showing */ });
   }
