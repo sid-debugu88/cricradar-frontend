@@ -945,12 +945,28 @@ a { color: inherit; }
     fillGrid(resultsGrid, done.slice(0, 6), 'No completed matches tracked yet.');
   }
 
+  // Honest freshness label, since free-tier polling can lag up to ~35 minutes
+  // behind — better to say so plainly than let it look broken when a real
+  // wicket takes a while to show up.
+  function timeAgoShort(iso) {
+    if (!iso) return null;
+    var mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (mins < 1) return 'just now';
+    if (mins === 1) return '1 min ago';
+    if (mins < 60) return mins + ' min ago';
+    var hrs = Math.round(mins / 60);
+    return hrs + 'h ago';
+  }
+
   function fetchMatches() {
     fetch(BACKEND_URL + '/api/matches')
       .then(function (r) { return r.json(); })
       .then(function (data) {
         renderMatches(data.matches || []);
         updateBento([]);
+        var feedMeta = document.getElementById('feedMeta');
+        var ago = timeAgoShort(data.lastChecked);
+        feedMeta.textContent = ago ? 'Checked ' + ago : 'Live tracking';
         // Arrived from a tapped alert? Open that match once, then clean the URL.
         var wanted = new URLSearchParams(location.search).get('match');
         if (wanted && matchesById[wanted] && !openMatchId) {
