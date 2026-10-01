@@ -681,7 +681,7 @@ a { color: inherit; }
         }
         var s = series[0];
         h.textContent = s.name || 'Series in progress';
-        d.textContent = (s.matches ? s.matches + ' matches' : '') + (s.startDate ? ' · from ' + seriesDateLabel(s.startDate) : '');
+        d.textContent = (s.matches ? s.matches + ' matches' : '') + (s.startDate ? ' · from ' + seriesDateLabel(s.startDate, s.name) : '');
         var card = document.getElementById('seriesWatchCard');
         card.style.cursor = 'pointer';
         card.onclick = function () {
@@ -796,18 +796,25 @@ a { color: inherit; }
   function buildDetailHtml(match, alert) {
     var parts = [];
     if (match.venue && match.venue.name) {
-      parts.push('<span><strong>Venue</strong> ' + match.venue.name + (match.venue.city ? ', ' + match.venue.city : '') + '</span>');
+      parts.push('<span><strong>Venue</strong> ' + esc(match.venue.name) + (match.venue.city ? ', ' + esc(match.venue.city) : '') + '</span>');
     }
-    if (match.state && match.state.report) {
-      parts.push('<span><strong>Report</strong> ' + match.state.report + '</span>');
+    // Highlightly's "report" text can be stale or mismatched to the wrong
+    // match — only show it if it doesn't contradict what CricAPI already
+    // confirmed (our alert.sub). Two data sources disagreeing on screen is
+    // worse than one of them saying nothing.
+    var ourStatus = (alert && alert.sub || '').toLowerCase();
+    var matchAlreadyDecided = /won by|drawn|tied|no result|abandoned/i.test(ourStatus);
+    var reportSaysNotStarted = match.state && match.state.report && /yet to begin|not started|upcoming/i.test(match.state.report);
+    if (match.state && match.state.report && !(matchAlreadyDecided && reportSaysNotStarted)) {
+      parts.push('<span><strong>Report</strong> ' + esc(match.state.report) + '</span>');
     }
     var best = (match.bestBatsmen || [])[0];
     var topBatter = best && best.players && best.players[0];
     if (topBatter && topBatter.statistics) {
-      parts.push('<span><strong>Top run-scorer</strong> ' + topBatter.name + ' — ' + topBatter.statistics.runs + ' runs</span>');
+      parts.push('<span><strong>Top run-scorer</strong> ' + esc(topBatter.name) + ' — ' + esc(topBatter.statistics.runs) + ' runs</span>');
     }
     if (parts.length === 0) {
-      parts.push('<span><strong>Confirmed</strong> ' + exactTime(alert.time) + '</span>');
+      parts.push('<span><strong>Confirmed</strong> ' + esc(exactTime(alert.time)) + '</span>');
     }
     return '<div class="tick-detail-row">' + parts.join('') + '</div>';
   }
@@ -904,7 +911,11 @@ a { color: inherit; }
   // full "2027-03-18", sometimes a bare "Mar 11" with no year at all. This
   // normalizes both into one clear, always-dated format so nothing reads
   // as ambiguous or looks like it might be this year when it isn't.
-  function seriesDateLabel(raw) {
+  // CricAPI's series dates are inconsistent — sometimes a full "2027-03-18",
+  // sometimes a bare "Mar 11" with no year. When the date itself has no year,
+  // the series NAME almost always does ("...2027", "...2026-27") — we use
+  // that as the real year instead of flagging it as broken or guessing "this year."
+  function seriesDateLabel(raw, seriesName) {
     if (!raw) return '';
     var hasYear = /\d{4}/.test(raw);
     if (hasYear) {
@@ -912,11 +923,19 @@ a { color: inherit; }
       if (!isNaN(d.getTime())) {
         return d.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
       }
-      return raw; // already has a year in some form we couldn't parse cleanly — show as-is rather than guess
+      return raw;
     }
-    // No year present at all: CricAPI gave us something like "Mar 11" with
-    // no way to know which year. Say so honestly instead of assuming "this year."
-    return raw + ' (year not confirmed by source)';
+    var nameYearMatch = (seriesName || '').match(/\b(20\d{2})\b/);
+    if (nameYearMatch) {
+      var withYear = new Date(raw + ' ' + nameYearMatch[1]);
+      if (!isNaN(withYear.getTime())) {
+        return withYear.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+      return raw + ', ' + nameYearMatch[1];
+    }
+    // Genuinely no year anywhere we can find one — rather than show a
+    // confusing error-looking label, just show what we have plainly.
+    return raw;
   }
 
   function matchCard(m) {
@@ -1012,7 +1031,7 @@ a { color: inherit; }
       var card = document.createElement('div');
       card.className = 'match-card';
       card.style.cursor = 'default';
-      var when = s.startDate ? 'Starts ' + seriesDateLabel(s.startDate) : 'Date to be confirmed';
+      var when = s.startDate ? 'Starts ' + seriesDateLabel(s.startDate, s.name) : 'Date to be confirmed';
       card.innerHTML =
         '<div class="mc-top"><span class="mc-type">SERIES</span><span class="mc-state upcoming">UPCOMING</span></div>' +
         '<div class="mc-team"><span class="mc-team-name">' + esc(s.name || 'Series') + '</span></div>' +
@@ -1053,7 +1072,7 @@ a { color: inherit; }
           strip.innerHTML = '<div class="digest-item"><span class="digest-text" style="color:var(--text-dim);">No active series matched right now. This fills in as tournaments start.</span></div>';
         } else {
           list.slice(0, 6).forEach(function (s) {
-            var meta = [s.matches ? s.matches + ' matches' : '', s.startDate ? 'from ' + seriesDateLabel(s.startDate) : ''].filter(Boolean).join(' · ');
+            var meta = [s.matches ? s.matches + ' matches' : '', s.startDate ? 'from ' + seriesDateLabel(s.startDate, s.name) : ''].filter(Boolean).join(' · ');
             strip.innerHTML += '<div class="digest-item"><span class="digest-tag">SERIES</span><span class="digest-text">' + esc(s.name || 'Series') + (meta ? ' — ' + esc(meta) : '') + '</span></div>';
           });
         }
