@@ -397,12 +397,12 @@ a { color: inherit; }
       <h2 id="mainHeadline">Checking for live matches…</h2>
       <p class="desc" id="mainDesc">Sift checks in on world cricket regularly, day and night.</p>
     </div>
-    <div class="bento-card">
+    <div class="bento-card" id="lastResultCard" style="cursor:default;">
       <div class="tag-row" style="margin-bottom:0;"><span class="tag-meta">Last result</span></div>
       <h3 id="lastResultHeadline">Not available yet</h3>
       <div class="desc-sm" id="lastResultDesc">This will fill in once Sift has tracked a completed match.</div>
     </div>
-    <div class="bento-card">
+    <div class="bento-card" id="seriesWatchCard" style="cursor:default;">
       <div class="tag-row" style="margin-bottom:0;"><span class="tag-meta">Series watch</span></div>
       <h3 id="seriesWatchHeadline">Not available yet</h3>
       <div class="desc-sm" id="seriesWatchDesc">Upcoming series schedules are coming in a future update.</div>
@@ -681,7 +681,13 @@ a { color: inherit; }
         }
         var s = series[0];
         h.textContent = s.name || 'Series in progress';
-        d.textContent = (s.matches ? s.matches + ' matches' : '') + (s.startDate ? ' · from ' + s.startDate : '');
+        d.textContent = (s.matches ? s.matches + ' matches' : '') + (s.startDate ? ' · from ' + seriesDateLabel(s.startDate) : '');
+        var card = document.getElementById('seriesWatchCard');
+        card.style.cursor = 'pointer';
+        card.onclick = function () {
+          var target = document.getElementById('digestStrip');
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
       })
       .catch(function () { /* leave the honest empty state as-is */ });
   }
@@ -722,12 +728,17 @@ a { color: inherit; }
       mainDesc.textContent = 'Sift tracks international and major league cricket. The next fixture appears here the moment one is scheduled.';
     }
 
+    var lastResultCard = document.getElementById('lastResultCard');
     if (done) {
       lastResultH.textContent = (done.teams && done.teams.length === 2) ? done.teams[0] + ' vs ' + done.teams[1] : done.name;
       lastResultD.textContent = done.status || '';
+      lastResultCard.style.cursor = 'pointer';
+      lastResultCard.onclick = function () { openMatch(done.id); };
     } else if (alerts && alerts.length) {
       var r = alerts.find(function (a) { return /result|won|beat/i.test(a.tag + a.headline); });
       if (r) { lastResultH.textContent = r.headline; lastResultD.textContent = r.sub || ''; }
+      lastResultCard.style.cursor = 'default';
+      lastResultCard.onclick = null;
     }
   }
 
@@ -884,7 +895,28 @@ a { color: inherit; }
     if (!m.dateTimeGMT) return m.date || '';
     var d = new Date(m.dateTimeGMT.indexOf('Z') === -1 ? m.dateTimeGMT + 'Z' : m.dateTimeGMT);
     if (isNaN(d.getTime())) return m.date || '';
-    return d.toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+    // Always show the year — a bare "Mar 11" is genuinely ambiguous for a
+    // fixture that could be many months or even a year away.
+    return d.toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+
+  // CricAPI's series data sends dates in inconsistent formats — sometimes a
+  // full "2027-03-18", sometimes a bare "Mar 11" with no year at all. This
+  // normalizes both into one clear, always-dated format so nothing reads
+  // as ambiguous or looks like it might be this year when it isn't.
+  function seriesDateLabel(raw) {
+    if (!raw) return '';
+    var hasYear = /\d{4}/.test(raw);
+    if (hasYear) {
+      var d = new Date(raw);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+      return raw; // already has a year in some form we couldn't parse cleanly — show as-is rather than guess
+    }
+    // No year present at all: CricAPI gave us something like "Mar 11" with
+    // no way to know which year. Say so honestly instead of assuming "this year."
+    return raw + ' (year not confirmed by source)';
   }
 
   function matchCard(m) {
@@ -980,7 +1012,7 @@ a { color: inherit; }
       var card = document.createElement('div');
       card.className = 'match-card';
       card.style.cursor = 'default';
-      var when = s.startDate ? 'Starts ' + s.startDate : 'Date to be confirmed';
+      var when = s.startDate ? 'Starts ' + seriesDateLabel(s.startDate) : 'Date to be confirmed';
       card.innerHTML =
         '<div class="mc-top"><span class="mc-type">SERIES</span><span class="mc-state upcoming">UPCOMING</span></div>' +
         '<div class="mc-team"><span class="mc-team-name">' + esc(s.name || 'Series') + '</span></div>' +
@@ -1021,7 +1053,7 @@ a { color: inherit; }
           strip.innerHTML = '<div class="digest-item"><span class="digest-text" style="color:var(--text-dim);">No active series matched right now. This fills in as tournaments start.</span></div>';
         } else {
           list.slice(0, 6).forEach(function (s) {
-            var meta = [s.matches ? s.matches + ' matches' : '', s.startDate ? 'from ' + s.startDate : ''].filter(Boolean).join(' · ');
+            var meta = [s.matches ? s.matches + ' matches' : '', s.startDate ? 'from ' + seriesDateLabel(s.startDate) : ''].filter(Boolean).join(' · ');
             strip.innerHTML += '<div class="digest-item"><span class="digest-tag">SERIES</span><span class="digest-text">' + esc(s.name || 'Series') + (meta ? ' — ' + esc(meta) : '') + '</span></div>';
           });
         }
