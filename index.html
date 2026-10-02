@@ -84,7 +84,40 @@ a { color: inherit; }
 .shell { max-width: 920px; margin: 0 auto; padding: 0 24px 100px; }
 
 /* ---------- hero ---------- */
-.hero { padding: 52px 0 34px; }
+.hero {
+  padding: 52px 0 34px;
+  position: relative;
+  overflow: hidden;
+}
+/* A quiet, abstract texture behind the hero — stitched-seam arcs suggesting
+   a cricket ball, and a soft stadium-light glow. Not a photo, so there's
+   nothing to license and nothing that implies any real player's endorsement. */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -120px; right: -160px;
+  width: 520px; height: 520px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(61,107,255,0.07), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 360px; height: 360px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(61,107,255,0.14);
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 11px, rgba(61,107,255,0.05) 11px, rgba(61,107,255,0.05) 12px);
+  background-clip: content-box;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero > * { position: relative; z-index: 1; }
+@media (max-width: 640px) { .hero::before, .hero::after { opacity: 0.6; } }
 .hero-eyebrow {
   font-size: 12.5px; color: var(--blue-glow); margin: 0 0 14px; font-weight: 600;
   display: flex; align-items: center; gap: 8px;
@@ -440,6 +473,35 @@ a { color: inherit; }
     </div>
     <div class="digest-strip" id="digestStrip">
       <div class="digest-item"><span class="digest-text" style="color:var(--text-dim);">Checking for active series…</span></div>
+    </div>
+  </div>
+
+  <div class="section-statement">
+    <p>Cricket doesn't run on a schedule that suits anyone's attention span. There are weeks with three matches a day across four continents, and there are quiet stretches where the biggest news is a squad announcement for a series that starts in March. Most cricket apps assume you're checking during the first kind of week. Sift is built for both.</p>
+    <p>During the quiet stretches, this is where you'll find the small stuff that actually matters — who's fit again, who's been dropped, which tour just got confirmed. It's not exciting. It's just true, and it's here before most people think to look.</p>
+  </div>
+
+  <div class="ticker-section">
+    <div class="section-head">
+      <h2 class="section-title">What we're building next</h2>
+      <span class="section-sub">Not live yet — here so you know it's coming</span>
+    </div>
+    <div class="match-grid">
+      <div class="bento-card" style="opacity:0.7;">
+        <div class="tag-row" style="margin-bottom:0;"><span class="tag-meta">Fan commentary</span></div>
+        <h3 style="font-size:16px;">What people are actually saying, mid-match</h3>
+        <div class="desc-sm">Pulled from live match threads — the reactions, not just the score. Coming soon.</div>
+      </div>
+      <div class="bento-card" style="opacity:0.7;">
+        <div class="tag-row" style="margin-bottom:0;"><span class="tag-meta">Predictions</span></div>
+        <h3 style="font-size:16px;">Call it before it happens</h3>
+        <div class="desc-sm">Pick a winner, a top scorer, a result — see how you did against everyone else. Coming soon.</div>
+      </div>
+      <div class="bento-card" style="opacity:0.7;">
+        <div class="tag-row" style="margin-bottom:0;"><span class="tag-meta">More sports</span></div>
+        <h3 style="font-size:16px;">Beyond cricket</h3>
+        <div class="desc-sm">The same radar, for the other things you follow. Cricket comes first — we're making sure it's right before we widen out.</div>
+      </div>
     </div>
   </div>
 
@@ -1027,7 +1089,7 @@ a { color: inherit; }
       grid.appendChild(empty);
       return;
     }
-    seriesCacheForFallback.slice(0, 3).forEach(function (s) {
+    seriesCacheForFallback.slice(0, 6).forEach(function (s) {
       var card = document.createElement('div');
       card.className = 'match-card';
       card.style.cursor = 'default';
