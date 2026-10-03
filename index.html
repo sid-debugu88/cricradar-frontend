@@ -1102,16 +1102,51 @@ a { color: inherit; }
     });
   }
 
-  function fetchMatches() {
-    fetch(BACKEND_URL + '/api/matches')
+  // Real fixtures Highlightly found by checking specific future dates —
+  // this is what catches tournaments CricAPI's near-term-only view can't
+  // see yet, like a final that's a day or two out.
+  function fetchLookahead() {
+    return fetch(BACKEND_URL + '/api/lookahead')
       .then(function (r) { return r.json(); })
-      .then(function (data) {
-        renderMatches(data.matches || []);
+      .then(function (data) { return data.fixtures || []; })
+      .catch(function () { return []; });
+  }
+
+  function fetchMatches() {
+    Promise.all([
+      fetch(BACKEND_URL + '/api/matches').then(function (r) { return r.json(); }),
+      fetchLookahead(),
+    ])
+      .then(function (results) {
+        var data = results[0];
+        var lookahead = results[1];
+        var known = data.matches || [];
+        var knownIds = {};
+        known.forEach(function (m) { knownIds[m.id] = true; });
+        // Merge in lookahead fixtures, but never duplicate a match CricAPI
+        // already knows about — matched loosely by team pair, since the two
+        // sources use different IDs for the same real-world match.
+        var knownPairs = {};
+        known.forEach(function (m) {
+          if (m.teams && m.teams.length === 2) knownPairs[m.teams.slice().sort().join('|')] = true;
+        });
+        var merged = known.slice();
+        lookahead.forEach(function (m) {
+          var pairKey = (m.teams || []).slice().sort().join('|');
+          if (!knownPairs[pairKey]) {
+            merged.push({
+              id: m.id, name: m.name, teams: m.teams, venue: m.venue,
+              dateTimeGMT: m.dateTimeGMT, matchType: m.matchType,
+              score: [], matchStarted: false, matchEnded: false,
+            });
+          }
+        });
+
+        renderMatches(merged);
         updateBento([]);
         var feedMeta = document.getElementById('feedMeta');
         var ago = timeAgoShort(data.lastChecked);
         feedMeta.textContent = ago ? 'Checked ' + ago : 'Live tracking';
-        // Arrived from a tapped alert? Open that match once, then clean the URL.
         var wanted = new URLSearchParams(location.search).get('match');
         if (wanted && matchesById[wanted] && !openMatchId) {
           openMatch(wanted);
