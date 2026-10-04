@@ -596,6 +596,22 @@ a { color: inherit; }
       var intensity = document.querySelector('#intensityRow .intensity.active');
       localStorage.setItem(PREF_KEY, JSON.stringify({ teams: teams, intensity: intensity ? intensity.dataset.v : 'important', savedOnce: true }));
     } catch (e) { /* storage unavailable — preferences just won't persist, nothing else breaks */ }
+
+    // If alerts are already on, the backend needs to know the team change
+    // too — otherwise someone who switches from India to Australia keeps
+    // getting India alerts until they happen to reload the page.
+    if (bellBtn.classList.contains('on') && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(function (reg) {
+        return reg && reg.pushManager.getSubscription();
+      }).then(function (sub) {
+        if (!sub) return;
+        return fetch(BACKEND_URL + '/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub, teams: selectedTeamNames() }),
+        });
+      }).catch(function () { /* best-effort — the next page load's re-sync will catch it */ });
+    }
   }
   (function applyPrefs() {
     var saved = loadPrefs();
@@ -639,6 +655,24 @@ a { color: inherit; }
   // Real push: register the background service worker, ask permission,
   // subscribe with the browser's push service, then hand that subscription
   // to our backend so it can actually notify this device later — even closed.
+  // Chip values use no-space slugs for CSS/data-attribute convenience, but
+  // the backend matches against real team names as they appear in match
+  // data (which do have spaces). This maps one to the other so filtering
+  // actually works instead of silently never matching.
+  var CHIP_TO_TEAM_NAME = {
+    india: 'india', australia: 'australia', england: 'england', pakistan: 'pakistan',
+    southafrica: 'south africa', newzealand: 'new zealand',
+    // ipl/psl/bbl/womens are competitions, not teams — they aren't sent as
+    // team filters since the backend filters push by team name, not league.
+    // A subscriber who only picked a league gets no team filter (sends all),
+    // which is the safer default until league-based filtering is built.
+  };
+  function selectedTeamNames() {
+    return Array.from(document.querySelectorAll('#interestChips .chip.active'))
+      .map(function (c) { return CHIP_TO_TEAM_NAME[c.dataset.v]; })
+      .filter(Boolean);
+  }
+
   function requestPush() {
     if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
       showToast('Push isn\'t supported in this browser.');
@@ -662,7 +696,7 @@ a { color: inherit; }
         return fetch(BACKEND_URL + '/api/push/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(subscription),
+          body: JSON.stringify({ subscription: subscription, teams: selectedTeamNames() }),
         });
       }).then(function () {
         setAlertsOn(true);
@@ -1329,7 +1363,7 @@ a { color: inherit; }
       return fetch(BACKEND_URL + '/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sub),
+        body: JSON.stringify({ subscription: sub, teams: selectedTeamNames() }),
       });
     }).catch(function () { /* no existing registration yet — fine, leave as-is */ });
   }
